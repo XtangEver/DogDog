@@ -45,6 +45,7 @@ const trace = z.object({
     totalTokens: z.number().optional(),
   }),
 });
+export const traceSchema = trace;
 const task = z.object({
   goal: z.string().max(20000),
   criteria: z.string().max(20000),

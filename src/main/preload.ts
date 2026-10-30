@@ -18,5 +18,27 @@ const api: DogDogAPI = {
   copy: (text) => invoke("copy", text),
   exportReview: (review) => invoke("exportReview", review),
   openGuide: (id) => invoke("openGuide", id),
+  conversations: () => invoke("conversations"),
+  createConversation: () => invoke("createConversation"),
+  conversation: (id) => invoke("conversation", id),
+  attachSources: (id, path) => invoke("attachSources", id, path),
+  refreshSource: (id, sourceId) => invoke("refreshSource", id, sourceId),
+  removeSource: (id, sourceId) => invoke("removeSource", id, sourceId),
+  previewConversation: (id, text) => invoke("previewConversation", id, text),
+  authorizeConversation: (id, token) =>
+    invoke("authorizeConversation", id, token),
+  sendMessage: (id, text) => invoke("sendMessage", id, text),
+  saveConversationReport: (id, messageId) =>
+    invoke("saveConversationReport", id, messageId),
+  onAgentEvent: (listener) => {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      value: Parameters<typeof listener>[0],
+    ) => listener(value);
+    ipcRenderer.on("dogdog:agentEvent", handler);
+    return () => {
+      ipcRenderer.removeListener("dogdog:agentEvent", handler);
+    };
+  },
 };
 contextBridge.exposeInMainWorld("dogdog", Object.freeze(api));

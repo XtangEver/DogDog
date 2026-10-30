@@ -157,4 +157,116 @@ export interface DogDogAPI {
   copy(text: string): Promise<void>;
   exportReview(review: Review): Promise<boolean>;
   openGuide(id: string): Promise<void>;
+  conversations(): Promise<Conversation[]>;
+  createConversation(): Promise<Conversation>;
+  conversation(id: string): Promise<Conversation>;
+  attachSources(id: string, path?: string): Promise<Conversation>;
+  refreshSource(id: string, sourceId: string): Promise<Conversation>;
+  removeSource(id: string, sourceId: string): Promise<Conversation>;
+  previewConversation(id: string, text: string): Promise<ConversationPreview>;
+  authorizeConversation(id: string, token: string): Promise<Conversation>;
+  sendMessage(id: string, text: string): Promise<Conversation>;
+  saveConversationReport(id: string, messageId: string): Promise<Conversation>;
+  onAgentEvent(listener: (event: AgentEvent) => void): () => void;
+}
+
+export interface SourceSnapshot {
+  id: string;
+  trace: Trace;
+  attachedAt: string;
+  active: boolean;
+}
+export interface ToolCall {
+  id: string;
+  name: string;
+  arguments: string;
+}
+export interface AgentWireMessage {
+  role: "user" | "assistant" | "tool";
+  text: string;
+  calls?: ToolCall[];
+  callId?: string;
+  native?: unknown[];
+}
+export interface ConversationMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  createdAt: string;
+  runId: string;
+  status: "complete" | "generating" | "incomplete";
+  kind: "answer" | "question";
+  evidenceIds: string[];
+}
+export interface AgentRequest {
+  at: string;
+  protocol: ModelProtocol;
+  endpoint: string;
+  model: string;
+  payload: string;
+  chars: number;
+}
+export interface AgentToolRecord {
+  name: string;
+  arguments: string;
+  result: string;
+}
+export interface AgentRun {
+  id: string;
+  status:
+    | "running"
+    | "waiting"
+    | "completed"
+    | "failed"
+    | "cancelled"
+    | "interrupted";
+  startedAt: string;
+  updatedAt: string;
+  fingerprint: string;
+  requests: AgentRequest[];
+  tools: AgentToolRecord[];
+  wire: AgentWireMessage[];
+  evidenceIds: string[];
+  questionCallId?: string;
+  error?: string;
+}
+export interface ConversationReport {
+  id: string;
+  version: number;
+  messageId: string;
+  text: string;
+  evidenceIds: string[];
+  createdAt: string;
+}
+export interface Conversation {
+  schemaVersion: 1;
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  contextStart: number;
+  sources: SourceSnapshot[];
+  messages: ConversationMessage[];
+  runs: AgentRun[];
+  reports: ConversationReport[];
+  grant?: { fingerprint: string; at: string };
+}
+export interface ConversationPreview {
+  token: string;
+  requiresAuthorization: boolean;
+  protocol: ModelProtocol;
+  endpoint: string;
+  model: string;
+  payload: string;
+  chars: number;
+  sourceIds: string[];
+}
+export interface AgentEvent {
+  conversationId: string;
+  runId: string;
+  type: "delta" | "state";
+  text?: string;
+  messages?: ConversationMessage[];
+  run?: AgentRun;
+  title?: string;
 }

@@ -117,6 +117,9 @@ async function launch() {
     env,
   });
   page = await app.firstWindow();
+  const legacy = page.getByRole("button", { name: "旧版复盘", exact: true });
+  await legacy.or(page.getByText("下一次，让协作更顺一点。")).waitFor();
+  if (await legacy.isVisible()) await legacy.click();
   await page.getByText("下一次，让协作更顺一点。").waitFor();
 }
 async function importOriginal() {

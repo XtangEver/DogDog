@@ -23,7 +23,9 @@ try {
   page.on("console", (m) => {
     if (m.type() === "error") errors.push(m.text());
   });
-  await page.getByText("下一次，让协作更顺一点。").waitFor({ timeout: 15000 });
+  await page
+    .getByRole("button", { name: "新建讨论" })
+    .waitFor({ timeout: 15000 });
   const state = await app.evaluate(({ app, BrowserWindow }) => ({
     packaged: app.isPackaged,
     visible: BrowserWindow.getAllWindows()[0].isVisible(),

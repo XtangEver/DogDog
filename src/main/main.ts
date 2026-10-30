@@ -16,6 +16,23 @@ import { buildPreview, requestDiagnosis } from "../core/diagnosis";
 import { GUIDE_VERSION, guides } from "../shared/guides";
 import { selectEvents } from "../shared/selection";
 import type { Review, SessionSummary } from "../shared/types";
+import { randomUUID } from "node:crypto";
+import { z } from "zod";
+import {
+  ConversationStore,
+  attachSnapshot,
+  newConversation,
+  revokeSource,
+  sourceFingerprint,
+} from "../core/conversations";
+import {
+  agentInstructions,
+  agentTools,
+  initialWire,
+  runConversation,
+} from "../core/agent";
+import { buildAgentRequest } from "../core/agent-provider";
+import type { Conversation } from "../shared/types";
 
 app.setName("DogDog");
 if (process.env.DOGDOG_USER_DATA)
@@ -23,6 +40,28 @@ if (process.env.DOGDOG_USER_DATA)
 let window: BrowserWindow;
 let controller: AbortController | undefined;
 let store: Store;
+let conversationStore: ConversationStore;
+let conversationMutation = false;
+let recoveryWarning = "";
+const grants = new Map<
+  string,
+  { id: string; fingerprint: string; expiresAt: number }
+>();
+async function editConversation(
+  id: string,
+  work: (c: Conversation) => Promise<void> | void,
+) {
+  if (controller || conversationMutation)
+    throw new Error("请等待当前操作完成，或先停止分析。");
+  conversationMutation = true;
+  try {
+    const c = await conversationStore.load(id);
+    await work(c);
+    return await conversationStore.save(c);
+  } finally {
+    conversationMutation = false;
+  }
+}
 const allowedPaths = new Set<string>();
 async function sessions() {
   const codexHome = process.env.CODEX_HOME || join(homedir(), ".codex");
@@ -139,6 +178,25 @@ app.whenReady().then(async () => {
     },
   };
   store = new Store(join(app.getPath("userData"), "reviews"), crypto);
+  conversationStore = new ConversationStore(
+    join(app.getPath("userData"), "conversations"),
+  );
+  await conversationStore.recover().catch(() => {
+    recoveryWarning = "部分对话无法恢复，原文件已保留，请检查本地对话目录。";
+  });
+  // Explicit isolated real-service harness. Never activate for a normal profile.
+  if (process.env.DOGDOG_REAL_CHECK === "1" && process.env.DOGDOG_USER_DATA) {
+    if (!process.env.GLM_API_KEY) throw new Error("真实测试缺少 GLM_API_KEY。");
+    await store.saveSettings({
+      protocol: "openai-responses",
+      baseUrl:
+        process.env.DOGDOG_CHECK_ENDPOINT ||
+        "https://open.bigmodel.cn/api/v1/responses",
+      model: process.env.DOGDOG_CHECK_MODEL || "GLM-5.3",
+      maxInputChars: 120000,
+      apiKey: process.env.GLM_API_KEY,
+    });
+  }
   window = new BrowserWindow({
     width: 1440,
     height: 960,
@@ -169,13 +227,176 @@ app.whenReady().then(async () => {
     ]);
     return {
       sessions: s.sessions,
-      sessionWarnings: [...s.warnings, ...r.warnings],
+      sessionWarnings: [
+        ...s.warnings,
+        ...r.warnings,
+        ...(recoveryWarning ? [recoveryWarning] : []),
+      ],
       reviews: r.reviews,
       settings,
       dataPath: store.dir,
     };
   });
   handle("refreshSessions", sessions);
+  handle("conversations", () => conversationStore.list());
+  handle("conversation", (id: string) => conversationStore.load(id));
+  handle("createConversation", () => {
+    if (controller || conversationMutation)
+      throw new Error("请先停止当前分析。");
+    return conversationStore.save(newConversation());
+  });
+  handle("attachSources", (id: string, path?: string) =>
+    editConversation(id, async (c) => {
+      let paths: string[];
+      if (path !== undefined) {
+        if (typeof path !== "string" || !allowedPaths.has(path))
+          throw new Error("请从会话列表或文件选择器选择轨迹。");
+        paths = [path];
+      } else {
+        const result = await dialog.showOpenDialog(window, {
+          title: "关联轨迹（可多选）",
+          filters: [{ name: "Codex 轨迹", extensions: ["jsonl"] }],
+          properties: ["openFile", "multiSelections"],
+        });
+        if (result.canceled) return;
+        paths = result.filePaths;
+      }
+      for (const p of paths) {
+        const trace = await parseTraceFile(p);
+        allowedPaths.add(p);
+        attachSnapshot(c, trace);
+      }
+    }),
+  );
+  handle("refreshSource", (id: string, sourceId: string) =>
+    editConversation(id, async (c) => {
+      const source = c.sources.find((s) => s.id === sourceId && s.active);
+      if (!source) throw new Error("来源不存在或已移除。");
+      const trace = await parseTraceFile(source.trace.path);
+      if (trace.hash === source.trace.hash) return;
+      revokeSource(c, sourceId);
+      attachSnapshot(c, trace);
+    }),
+  );
+  handle("removeSource", (id: string, sourceId: string) =>
+    editConversation(id, (c) => {
+      revokeSource(c, sourceId);
+    }),
+  );
+  handle("previewConversation", async (id: string, text: string) => {
+    text = z.string().trim().min(1).max(100000).parse(text);
+    const c = await conversationStore.load(id),
+      settings = await store.settings();
+    const fingerprint = sourceFingerprint(c, settings);
+    const waiting = [...c.runs]
+      .reverse()
+      .find((r) => r.status === "waiting" && r.fingerprint === fingerprint);
+    const wire = waiting
+      ? [
+          ...waiting.wire,
+          {
+            role: "tool" as const,
+            callId: waiting.questionCallId,
+            text: JSON.stringify({ answer: text }),
+          },
+        ]
+      : initialWire(c, text);
+    const request = buildAgentRequest(
+        settings,
+        agentInstructions,
+        wire,
+        agentTools,
+      ),
+      token = randomUUID();
+    for (const [t, g] of grants) if (g.expiresAt < Date.now()) grants.delete(t);
+    grants.set(token, {
+      id: c.id,
+      fingerprint,
+      expiresAt: Date.now() + 600000,
+    });
+    const sources = c.sources.filter((s) => s.active);
+    return {
+      token,
+      requiresAuthorization: c.grant?.fingerprint !== fingerprint,
+      protocol: settings.protocol,
+      endpoint: request.endpoint,
+      model: settings.model,
+      chars: request.chars,
+      sourceIds: sources.map((s) => s.id),
+      payload: JSON.stringify(
+        {
+          initialRequest: JSON.parse(request.payload),
+          authorizedSources: sources.map((s) => ({
+            id: s.id,
+            hash: s.trace.hash,
+            title: s.trace.title,
+            events: s.trace.events,
+          })),
+        },
+        null,
+        2,
+      ),
+    };
+  });
+  handle("authorizeConversation", (id: string, token: string) =>
+    editConversation(id, async (c) => {
+      const grant = grants.get(token),
+        fingerprint = sourceFingerprint(c, await store.settings());
+      if (
+        !grant ||
+        grant.id !== id ||
+        grant.expiresAt < Date.now() ||
+        grant.fingerprint !== fingerprint
+      )
+        throw new Error("发送范围已变化或预览已过期，请重新检查。");
+      c.grant = { fingerprint, at: new Date().toISOString() };
+      grants.delete(token);
+    }),
+  );
+  handle("sendMessage", async (id: string, text: string) => {
+    if (controller || conversationMutation)
+      throw new Error("已有分析或来源操作正在进行。");
+    controller = new AbortController();
+    const current = controller;
+    try {
+      const c = await conversationStore.load(id),
+        settings = await store.settings();
+      return await runConversation(
+        c,
+        text,
+        settings,
+        await store.key(),
+        current.signal,
+        (value) => conversationStore.save(value),
+        (event) => {
+          if (!window.isDestroyed())
+            window.webContents.send("dogdog:agentEvent", event);
+        },
+      );
+    } finally {
+      if (controller === current) controller = undefined;
+    }
+  });
+  handle("saveConversationReport", (id: string, messageId: string) =>
+    editConversation(id, (c) => {
+      const message = c.messages.find(
+        (m) =>
+          m.id === messageId &&
+          m.role === "assistant" &&
+          m.status === "complete" &&
+          m.kind === "answer",
+      );
+      if (!message) throw new Error("只能将完整回答保存为报告。");
+      c.reports.push({
+        id: randomUUID(),
+        version: c.reports.length + 1,
+        messageId,
+        text: message.text,
+        evidenceIds: [...message.evidenceIds],
+        createdAt: new Date().toISOString(),
+      });
+    }),
+  );
   handle("openTrace", async (path: string) => {
     if (typeof path !== "string" || !allowedPaths.has(path))
       throw new Error("请从会话列表或文件选择器选择轨迹。");
@@ -193,21 +414,28 @@ app.whenReady().then(async () => {
     return parseTraceFile(path);
   });
   handle("saveReview", (r: Review) => store.saveReview(r));
-  handle("saveSettings", (s) => {
-    if (controller) throw new Error("请先取消当前诊断，再修改模型设置。");
-    return store.saveSettings(s);
+  handle("saveSettings", async (s) => {
+    if (controller || conversationMutation)
+      throw new Error("请先停止当前分析，再修改模型设置。");
+    conversationMutation = true;
+    try {
+      return await store.saveSettings(s);
+    } finally {
+      conversationMutation = false;
+    }
   });
   handle("preview", async (r: Review) =>
     buildPreview(validateReview(r), await store.settings()),
   );
   handle("diagnose", async (input: Review) => {
-    if (controller) throw new Error("已有诊断正在进行。");
+    if (controller || conversationMutation)
+      throw new Error("已有分析正在进行。");
     const r = validateReview(input);
-    const settings = await store.settings();
-    const preview = buildPreview(r, settings);
     controller = new AbortController();
     const current = controller;
     try {
+      const settings = await store.settings();
+      const preview = buildPreview(r, settings);
       const report = await requestDiagnosis(
         preview,
         await store.key(),

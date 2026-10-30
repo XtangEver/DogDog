@@ -1462,7 +1462,7 @@ export function App() {
     </div>
   );
 }
-function SettingsModal({
+export function SettingsModal({
   settings,
   dataPath,
   close,
@@ -1481,7 +1481,7 @@ function SettingsModal({
   const [clear, setClear] = useState(false);
   const [saving, setSaving] = useState(false);
   return (
-    <Modal title="选择狗狗的诊断模型" close={close}>
+    <Modal title="选择狗狗的协作模型" close={close}>
       <p>选择接口协议，并填写服务提供的完整请求 URL。</p>
       <form
         onSubmit={(e) => {
@@ -1589,7 +1589,8 @@ function SettingsModal({
           <strong>本地复盘目录</strong>
           <code>{dataPath}</code>
           <small>
-            草稿、轨迹快照与报告保存在本机；已保存密钥不会回传界面。
+            草稿、轨迹快照与报告保存在本机；持续对话位于同级 conversations
+            目录。已保存密钥不会回传界面。
           </small>
         </div>
         <div className="form-actions">

@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-30T14:59:55.352Z",
+  "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+  "model": "GLM-5.3",
+  "protocol": "openai-responses",
+  "syntheticTrace": true,
+  "privateTraceSent": false,
+  "checks": [
+    {
+      "name": "无轨迹持续对话",
+      "requests": 1
+    },
+    {
+      "name": "真实模型追问",
+      "tools": [
+        "ask_user"
+      ]
+    },
+    {
+      "name": "重启后回答并继续"
+    },
+    {
+      "name": "真实跨轨迹工具循环与引用",
+      "requests": 5,
+      "tools": [
+        "list_sources",
+        "search_traces",
+        "search_traces",
+        "search_traces",
+        "search_traces",
+        "search_traces",
+        "search_traces",
+        "read_trace",
+        "read_trace"
+      ],
+      "evidenceIds": [
+        "S1:L2",
+        "S2:L2",
+        "S1:L3",
+        "S2:L3",
+        "S1:L4",
+        "S2:L4",
+        "S1:L5",
+        "S2:L5"
+      ]
+    },
+    {
+      "name": "真实讨论与报告恢复"
+    }
+  ],
+  "network": [
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    },
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "text/event-stream"
+    }
+  ],
+  "success": true,
+  "sourceFilesUnchanged": true,
+  "originalSettingsUnchanged": true
+}
