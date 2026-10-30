@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-30T14:17:51.315Z",
+  "executable": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\DogDog\\DogDog.exe",
+  "endpoint": "https://open.bigmodel.cn/api/v1",
+  "protocol": "openai-responses",
+  "model": "GLM-5.3",
+  "syntheticTrace": true,
+  "privateTraceSent": false,
+  "previewConfirmed": true,
+  "durationMs": 654,
+  "success": false,
+  "network": [
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "headerLatencyMs": 438
+    }
+  ],
+  "error": "模型响应与所选接口协议不匹配，请检查协议和完整 URL。",
+  "originalConfigUnchanged": true
+}

@@ -1,0 +1,13 @@
+{
+  "target": "packaged",
+  "packaged": true,
+  "visible": true,
+  "url": "file:///D:/work_record/DogDog/release/win-unpacked/resources/app.asar/dist/renderer/index.html",
+  "version": "0.1.0",
+  "boundaries": {
+    "requireAvailable": false,
+    "apiAvailable": true
+  },
+  "sessionCount": 7,
+  "rendererErrors": []
+}

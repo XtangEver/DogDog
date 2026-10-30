@@ -1,0 +1,12 @@
+{
+  "packaged": true,
+  "version": "0.1.0",
+  "isolated": true,
+  "protocols": [
+    "openai-responses",
+    "anthropic",
+    "openai-chat"
+  ],
+  "rendererErrors": [],
+  "realModelCalled": false
+}

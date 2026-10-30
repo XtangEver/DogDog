@@ -1,0 +1,26 @@
+# Dependencies, builds and test artifacts
+node_modules/
+dist/
+release/
+test-results/
+playwright-report/
+.cache/
+*.tsbuildinfo
+/assets/dogdog.ico
+
+# Local configuration, logs and private trace data
+.env*
+!.env.example
+*.log
+*.jsonl
+!tests/fixtures/**/*.jsonl
+verification/local-*
+
+# Existing smoke screenshots include real local session metadata
+/verification/screenshots/04-dev.png
+/verification/screenshots/04-packaged.png
+/verification/screenshots/protocol-packaged-settings.png
+
+# Windows metadata
+Thumbs.db
+Desktop.ini

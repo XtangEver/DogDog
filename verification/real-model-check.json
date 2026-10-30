@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-30T14:18:12.368Z",
+  "executable": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\DogDog\\DogDog.exe",
+  "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+  "protocol": "openai-responses",
+  "model": "GLM-5.3",
+  "syntheticTrace": true,
+  "privateTraceSent": false,
+  "previewConfirmed": true,
+  "durationMs": 84441,
+  "success": true,
+  "network": [
+    {
+      "endpoint": "https://open.bigmodel.cn/api/v1/responses",
+      "httpStatus": 200,
+      "contentType": "application/json; charset=utf-8",
+      "headerLatencyMs": 83819
+    }
+  ],
+  "evidenceValid": true,
+  "findings": 2,
+  "strengths": 2,
+  "originalConfigUnchanged": true
+}

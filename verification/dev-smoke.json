@@ -1,0 +1,13 @@
+{
+  "target": "dev",
+  "packaged": false,
+  "visible": true,
+  "url": "http://127.0.0.1:5173/",
+  "version": "0.1.0",
+  "boundaries": {
+    "requireAvailable": false,
+    "apiAvailable": true
+  },
+  "sessionCount": 7,
+  "rendererErrors": []
+}
