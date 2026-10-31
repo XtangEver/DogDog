@@ -44,14 +44,28 @@ export async function finalizeResult({
   fix("reviewer", draft.reviewer ?? {
     kind: "agent_proxy",
     identity: "claude.exe glm-5.3 independent context",
-    independentContext: "fresh -p session, reviewer package only",
+    independentContext: true,
   }, "reviewer identity");
+  if (draft.reviewer && typeof draft.reviewer.independentContext !== "boolean") {
+    timeline({ kind: "result-fixup", caseId, attempt, field: "reviewer.independentContext", why: "schema boolean" });
+    draft.reviewer.independentContext = true;
+  }
+  if (modelRequests == null) {
+    // Real-service runs have no request audit; 0 means "not counted", per pilot
+    // precedent. The limitation makes that explicit so 0 is never read as a
+    // zero-request claim.
+    draft.limitations = [
+      ...(draft.limitations ?? []),
+      "metrics.modelRequests=0 表示未计量（真实服务无请求审计），不代表零请求。",
+    ];
+  }
   draft.metrics = {
     elapsedMs: Date.parse(endedAt) - Date.parse(startedAt),
-    modelRequests: modelRequests ?? null,
+    modelRequests: modelRequests ?? 0,
     cost: null,
     ...(draft.metrics ?? {}),
   };
+  if (draft.metrics.modelRequests == null) draft.metrics.modelRequests = 0;
   // Strict parse BEFORE writing: schema violations must fail loudly here.
   const parsed = resultSchema.parse(draft);
   mkdirSync(join(outPath, ".."), { recursive: true });

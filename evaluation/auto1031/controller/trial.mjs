@@ -122,7 +122,7 @@ function reviewerPrompt({ caseId, reviewerPkgDir, evidenceDir, runRootDir, draft
 1. ${join(reviewerPkgDir, "SCORING.md")}（先读，判定顺序与状态定义以它为准）
 2. ${join(reviewerPkgDir, "cases", caseId.slice(3, 5), caseId + ".json")}（任务卡：must/mustNot/rubric）
 3. ${join(reviewerPkgDir, ...oraclePathFromCase(caseId))}（事实底稿）
-4. 证据目录：${evidenceDir}（本案例 ${attempt} 号尝试的全部过程证据：runner 回合动作摘要、控制器截图目录提示、audit.json、setup 报告、持久化快照、mock 请求审计等；截图位于 ${join(evidenceDir, "..", "..", "screenshots")} 下本案例子目录）
+4. 证据目录：${evidenceDir}（本案例 ${attempt} 号尝试的全部过程证据：runner 回合动作摘要、控制器截图目录提示、audit.json、setup 报告、持久化快照、mock 请求审计等；截图位于 ${join(evidenceDir, "..", "..", "..", "screenshots")} 下本案例子目录 ${caseId}-a${attempt}）
 5. 空白模板：${templatePath}
 
 ${visualFindings ? `视觉审查结论（独立视觉审查者返回，供参考）：\n${visualFindings}\n` : ""}
@@ -481,8 +481,10 @@ export async function runTrial({
     // 8. reviewer
     const templatePath = join(attemptDir, "REVIEW-template.md");
     copyFileSync(join(repo, "evaluation", "templates", "REVIEW.md"), templatePath);
-    const draftOutPath = join(attemptDir, "result-draft.json");
-    const reviewOutPath = join(attemptDir, "review-draft.md");
+    // Underscore names: trialFiles() picks up anything matching
+    // /result(?:-[^\\/]+)?\.json$/ — "result_draft.json" stays out of it.
+    const draftOutPath = join(attemptDir, "result_draft.json");
+    const reviewOutPath = join(attemptDir, "review_draft.md");
     const reviewerDir = join(attemptDir, "reviewer");
     const revRes = await runRole({
       role: "reviewer",
@@ -528,7 +530,7 @@ export async function runTrial({
     timeline({ kind: "trial-error", caseId, attempt, error: String(e.message ?? e).slice(0, 400) });
     appendEvent(runRootDir, { caseId, attempt, kind: "trial-error", error: String(e.message ?? e).slice(0, 400) });
     try {
-      const infraDraftPath = join(attemptDir, "result-infra-draft.json");
+      const infraDraftPath = join(attemptDir, "result_infra_draft.json");
       writeFileSync(infraDraftPath, JSON.stringify({
         status: "infrastructure_failure",
         checks: [], forbiddenChecks: [], scores: [],
