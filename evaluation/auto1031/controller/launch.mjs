@@ -69,6 +69,8 @@ export async function launchDogDog({
     env,
     label: label ?? "DogDog",
     trialId: label ?? null,
+    stdio: ["ignore", "ignore", "ignore"], // no pipes: parent must not hold handles
+    visible: true, // GUI app: must show its window
   });
   const pid = child.pid;
   let title = null;

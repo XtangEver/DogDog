@@ -13,7 +13,7 @@ import { runRole, readTranscript } from "./roles.mjs";
 import { runTrial, readJson } from "./trial.mjs";
 import { sha256File } from "./launch.mjs";
 import { buildCasePlan, writeCasePlan, summaryLine } from "./caseplan.mjs";
-import { installExitHooks, spawnTracked, killTree, confirmExited } from "./procs.mjs";
+import { installExitHooks, spawnTracked, killTree, confirmExited, sweepOrphans } from "./procs.mjs";
 
 const args = process.argv.slice(2);
 const cmd = args[0] ?? "status";
@@ -95,10 +95,16 @@ async function preflight() {
     throw new Error("campaign already started; use resume");
   if (!state) { state = initialState(); saveState(state); }
   installExitHooks();
-  timeline({ kind: "preflight-start" });
+  await sweepOrphans();
+  timeline({ kind: "preflight-start", resumed: Object.keys(state.preflight.checks).length > 0 });
   const pf = join(runRoot, "preflight");
+  const mark = (key, value) => {
+    state.preflight.checks[key] = value;
+    saveState(state); // incremental: a later crash keeps what already passed
+  };
+  const passed = (key) => state.preflight.checks[key] === "ok";
 
-  // 1. freeze assets
+  // 1. freeze assets (cheap, always re-verified)
   const val = await validateSuite();
   saveLog(join(pf, "suite-validate.json"), val);
   if (!val.valid) throw new Error("suite invalid: " + JSON.stringify(val.errors?.slice(0, 5)));
@@ -113,9 +119,9 @@ async function preflight() {
   atomicWriteJson(join(runRoot, "assets-frozen.json"), frozen);
   const { plan } = await writeCasePlan();
   saveLog(join(pf, "case-plan-summary.json"), { line: summaryLine(plan), dev: plan.dev, hold: plan.hold });
-  state.preflight.checks.assetsFrozen = sha256File(join(runRoot, "assets-frozen.json")).slice(0, 16);
+  mark("assetsFrozen", sha256File(join(runRoot, "assets-frozen.json")).slice(0, 16));
 
-  // 2. engineering baseline
+  // 2. engineering baseline (skip steps already green on a resume)
   const eng = join(pf, "engineering");
   const steps = [
     ["typecheck", "npm run typecheck"],
@@ -125,16 +131,18 @@ async function preflight() {
   ];
   let buildOk = true;
   for (const [name, command] of steps) {
+    if (passed("eng-" + name)) { timeline({ kind: "engineering-skip", name }); continue; }
     const r = sh(command, { timeoutMs: 1800000 });
     saveLog(join(eng, name + ".log"), r.out);
     timeline({ kind: "engineering", name, ok: r.ok });
     if (!r.ok && name === "build") buildOk = false;
-    state.preflight.checks["eng-" + name] = r.ok ? "ok" : "failed";
+    mark("eng-" + name, r.ok ? "ok" : "failed");
   }
   if (!buildOk) throw new Error("build impossible — cannot start campaign");
 
   // 3. claude.exe probes (both models; preset already carries the right model)
   for (const [model, role] of [["glm-5.3", "coordinator"], ["glm-5.3-flash", "visual"]]) {
+    if (passed("claude-" + model)) continue;
     const probeDir = join(pf, "claude-" + model);
     const res = await runRole({
       role,
@@ -143,26 +151,29 @@ async function preflight() {
       timeoutMs: 120000,
     });
     const t = readTranscript(join(probeDir, role + ".jsonl"));
-    state.preflight.checks["claude-" + model] =
-      res.exitCode === 0 && t.subtype === "success" ? "ok" : `fail(${res.exitCode}/${t.subtype})`;
+    mark("claude-" + model,
+      res.exitCode === 0 && t.subtype === "success" ? "ok" : `fail(${res.exitCode}/${t.subtype})`);
     timeline({ kind: "probe-claude", model, code: res.exitCode, subtype: t.subtype });
   }
 
   // 4. windows-mcp probe (runner preset drives DisplayInventory+Snapshot)
-  const mcpDir = join(pf, "mcp-probe");
-  const mcpRes = await runRole({
-    role: "runner",
-    promptText: `依次调用 windows-mcp 的 DisplayInventory 与 Snapshot(use_vision=false)，然后只回复一行 JSON：{"displays":<主显示器宽x高与缩放>,"windows":<可见窗口数>,"dogdogVisible":<布尔，桌面是否可见标题含 DogDog 的窗口>}。不要做其他事。`,
-    cwd: mcpDir, outDir: mcpDir, label: "probe:mcp",
-    timeoutMs: 180000,
-  });
-  const mcpT = readTranscript(join(mcpDir, "runner.jsonl"));
-  state.probes.windowsMcp = mcpRes.exitCode === 0 && mcpT.subtype === "success" ? "ok" : "fail";
-  try {
-    const inv = JSON.parse((mcpT.finalText ?? "").trim());
-    if (inv.displays) state.probes.display = { raw: inv.displays };
-  } catch {}
-  if (state.probes.windowsMcp !== "ok") throw new Error("windows-mcp probe failed");
+  if (state.probes.windowsMcp !== "ok") {
+    const mcpDir = join(pf, "mcp-probe");
+    const mcpRes = await runRole({
+      role: "runner",
+      promptText: `依次调用 windows-mcp 的 DisplayInventory 与 Snapshot(use_vision=false)，然后只回复一行 JSON：{"displays":<主显示器宽x高与缩放>,"windows":<可见窗口数>,"dogdogVisible":<布尔，桌面是否可见标题含 DogDog 的窗口>}。不要做其他事。`,
+      cwd: mcpDir, outDir: mcpDir, label: "probe:mcp",
+      timeoutMs: 180000,
+    });
+    const mcpT = readTranscript(join(mcpDir, "runner.jsonl"));
+    state.probes.windowsMcp = mcpRes.exitCode === 0 && mcpT.subtype === "success" ? "ok" : "fail";
+    saveState(state);
+    try {
+      const inv = JSON.parse((mcpT.finalText ?? "").trim());
+      if (inv.displays) state.probes.display = { raw: inv.displays };
+    } catch {}
+    if (state.probes.windowsMcp !== "ok") throw new Error("windows-mcp probe failed");
+  }
 
   // display geometry (authoritative, from PowerShell)
   const disp = sh("Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen | ForEach-Object { \"$($_.Bounds.Width)x$($_.Bounds.Height) scale=$([Math]::Round($([System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width / [System.Windows.Forms.SystemInformation]::VirtualScreen.Width * 100)))\" }");
@@ -170,41 +181,54 @@ async function preflight() {
 
   // 5. GLM text probe (direct request, key from env, never logged)
   const glm = await glmTextProbe();
-  state.preflight.checks.glmText = glm ? "ok" : "fail";
+  mark("glmText", glm ? "ok" : "fail");
   if (!glm) throw new Error("GLM text probe failed (credential/service dead?)");
 
   // 6. Flash image probe (3 tries) -> 429 fallback decision
-  const shot = join(pf, "probe-shot.png");
-  try {
-    const { captureScreen } = await import("./screen.mjs");
-    captureScreen(shot);
-  } catch {}
-  let imgOk = 0, img429 = 0;
-  for (let i = 1; i <= 3; i++) {
-    const dir = join(pf, "flash-img-" + i);
-    const res = await runRole({
-      role: "visual",
-      promptText: `用 Read 工具读取图片 ${shot}，然后用不超过20个汉字描述其主要内容。`,
-      cwd: dir, outDir: dir, label: "probe:flash-img-" + i,
-      timeoutMs: 120000,
-    });
-    const t = readTranscript(join(dir, "visual.jsonl"));
-    if (res.exitCode === 0 && t.subtype === "success" && (t.finalText ?? "").trim()) imgOk++;
-    else {
-      const raw = readFileSync(join(dir, "visual.jsonl"), "utf8");
-      if (/429|rate.?limit/i.test(raw + readFileSync(join(dir, "visual.stderr.log"), "utf8"))) img429++;
+  if (state.probes.flashImage !== "ok" && state.probes.flashImage !== "429-fallback-text") {
+    const shot = join(pf, "probe-shot.png");
+    try {
+      const { captureScreen } = await import("./screen.mjs");
+      captureScreen(shot);
+    } catch {}
+    let imgOk = 0, img429 = 0;
+    for (let i = 1; i <= 3; i++) {
+      const dir = join(pf, "flash-img-" + i);
+      const res = await runRole({
+        role: "visual",
+        promptText: `用 Read 工具读取图片 ${shot}，然后用不超过20个汉字描述其主要内容。`,
+        cwd: dir, outDir: dir, label: "probe:flash-img-" + i,
+        timeoutMs: 120000,
+      });
+      const t = readTranscript(join(dir, "visual.jsonl"));
+      if (res.exitCode === 0 && t.subtype === "success" && (t.finalText ?? "").trim()) imgOk++;
+      else {
+        const raw = readFileSync(join(dir, "visual.jsonl"), "utf8");
+        if (/429|rate.?limit/i.test(raw + readFileSync(join(dir, "visual.stderr.log"), "utf8"))) img429++;
+      }
     }
+    state.probes.flashImage = imgOk > 0 ? "ok" : img429 > 0 ? "429-fallback-text" : "fail-no-image";
+    saveState(state);
+    timeline({ kind: "probe-flash-image", ok: imgOk, err429: img429, decision: state.probes.flashImage });
   }
-  state.probes.flashImage = imgOk > 0 ? "ok" : img429 > 0 ? "429-fallback-text" : "fail-no-image";
-  timeline({ kind: "probe-flash-image", ok: imgOk, err429: img429, decision: state.probes.flashImage });
 
   // 7. baseline build auto-r0 + DogDog accessibility probe
-  const buildRes = sh("npm run package -- --config.directories.output=release/auto-r0", { timeoutMs: 3600000 });
-  saveLog(join(pf, "package-r0.log"), buildRes.out);
-  if (!buildRes.ok) throw new Error("packaging r0 failed");
-  const exe = readExeIdentity("release/auto-r0", "r0");
-  state.preflight.checks.buildR0 = exe.exeSha256.slice(0, 16);
-  await dogdogProbe({ exe, pf, state });
+  let exe;
+  const r0ExePath = join(repo, "release", "auto-r0", "win-unpacked", "DogDog.exe");
+  if (passed("buildR0") && existsSync(r0ExePath) &&
+      sha256File(r0ExePath).startsWith(String(state.preflight.checks.buildR0))) {
+    exe = readExeIdentity("release/auto-r0", "r0");
+    timeline({ kind: "package-skip", tag: "r0" });
+  } else {
+    const buildRes = sh("npm run package -- --config.directories.output=release/auto-r0", { timeoutMs: 3600000 });
+    saveLog(join(pf, "package-r0.log"), buildRes.out);
+    if (!buildRes.ok) throw new Error("packaging r0 failed");
+    exe = readExeIdentity("release/auto-r0", "r0");
+    mark("buildR0", exe.exeSha256.slice(0, 16));
+  }
+  if (state.preflight.checks.dogdogAccessibility !== "ok") {
+    await dogdogProbe({ exe, pf, state });
+  }
 
   // 8. PID discipline self-test (spawn own process → killTree → confirmExited)
   try {
@@ -214,9 +238,9 @@ async function preflight() {
     await new Promise((r) => setTimeout(r, 1500));
     killTree(child.pid);
     await confirmExited(child.pid, 15000);
-    state.preflight.checks.pidDiscipline = "ok";
+    mark("pidDiscipline", "ok");
   } catch (e) {
-    state.preflight.checks.pidDiscipline = "fail: " + String(e.message ?? e).slice(0, 120);
+    mark("pidDiscipline", "fail: " + String(e.message ?? e).slice(0, 120));
   }
 
   // 9. environment items (record-only)
@@ -224,9 +248,9 @@ async function preflight() {
   saveLog(join(pf, "powercfg.log"), power.out);
   const disk = sh("(Get-PSDrive D).Free / 1GB");
   const freeGb = Number((disk.out ?? "").trim());
-  state.preflight.checks.diskFreeGb = Number.isFinite(freeGb) ? Math.round(freeGb) : null;
-  state.preflight.checks.imeComposition = "unverified-unicode-injection-only";
-  state.preflight.checks.installCaseDD1204 = "deferred-to-trial (isolated provisioning attempted in round 0)";
+  mark("diskFreeGb", Number.isFinite(freeGb) ? Math.round(freeGb) : null);
+  mark("imeComposition", "unverified-unicode-injection-only");
+  mark("installCaseDD1204", "deferred-to-trial (isolated provisioning attempted in round 0)");
 
   state.preflight.checks.baselineCommit = sh("git rev-parse HEAD").out.trim();
   state.phase = "baseline-round";
@@ -296,24 +320,29 @@ async function dogdogProbe({ exe, pf, state }) {
     DOGDOG_REAL_CHECK: null,
     ELECTRON_RUN_AS_NODE: null,
   }), "utf8");
-  const rec = await launchDogDog({
-    exePath: exe.winUnpacked,
-    launchEnvPath: join(staging, "launch-env.json"),
-    trialDir: staging, attemptDir: staging, label: "preflight-probe",
-  });
-  const probeDir = join(pf, "dogdog-probe");
-  const res = await runRole({
-    role: "runner",
-    promptText: `DogDog 已启动（窗口标题应含 DogDog）。调用 Snapshot(use_vision=false) 观察桌面，然后只回复一行 JSON：{"titleFound":<布尔>,"newChat":<布尔，是否存在"新建讨论">,"questionBox":<布尔，是否存在"你的问题">,"settings":<布尔，是否存在"模型设置">,"notes":"<其他观察>"}。不要点击任何东西。`,
-    cwd: probeDir, outDir: probeDir, label: "probe:dogdog",
-    timeoutMs: 180000,
-  });
-  const t = readTranscript(join(probeDir, "runner.jsonl"));
-  state.preflight.checks.dogdogAccessibility = res.exitCode === 0 && t.subtype === "success" ? "ok" : "fail";
-  saveLog(join(pf, "dogdog-probe-result.json"), { finalText: t.finalText, subtype: t.subtype });
-  await stopDogDog(rec.pid, "preflight-probe");
-  if (state.preflight.checks.dogdogAccessibility !== "ok")
-    throw new Error("DogDog accessibility probe failed");
+  let rec = null;
+  try {
+    rec = await launchDogDog({
+      exePath: exe.winUnpacked,
+      launchEnvPath: join(staging, "launch-env.json"),
+      trialDir: staging, attemptDir: staging, label: "preflight-probe",
+    });
+    const probeDir = join(pf, "dogdog-probe");
+    const res = await runRole({
+      role: "runner",
+      promptText: `DogDog 已启动（窗口标题应含 DogDog）。调用 Snapshot(use_vision=false) 观察桌面，然后只回复一行 JSON：{"titleFound":<布尔>,"newChat":<布尔，是否存在"新建讨论">,"questionBox":<布尔，是否存在"你的问题">,"settings":<布尔，是否存在"模型设置">,"notes":"<其他观察>"}。不要点击任何东西。`,
+      cwd: probeDir, outDir: probeDir, label: "probe:dogdog",
+      timeoutMs: 180000,
+    });
+    const t = readTranscript(join(probeDir, "runner.jsonl"));
+    state.preflight.checks.dogdogAccessibility = res.exitCode === 0 && t.subtype === "success" ? "ok" : "fail";
+    saveState(state);
+    saveLog(join(pf, "dogdog-probe-result.json"), { finalText: t.finalText, subtype: t.subtype });
+    if (state.preflight.checks.dogdogAccessibility !== "ok")
+      throw new Error("DogDog accessibility probe failed");
+  } finally {
+    if (rec?.pid) { try { await stopDogDog(rec.pid, "preflight-probe"); } catch {} }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -398,6 +427,7 @@ async function round0() {
   const state = loadState();
   if (state.phase !== "baseline-round") throw new Error("not in baseline phase: " + state.phase);
   installExitHooks();
+  await sweepOrphans();
   const plan = loadJson(join(runRoot, "case-plan.json"), null);
   if (!plan) throw new Error("missing case-plan.json");
   const roundDir = join(runRoot, "r0");
@@ -432,6 +462,7 @@ async function coderRound(n) {
   const state = loadState();
   if (state.stop) throw new Error("campaign stopped: " + state.stop.reason);
   installExitHooks();
+  await sweepOrphans();
   const plan = loadJson(join(runRoot, "case-plan.json"), null);
   const prevRound = join(runRoot, "r" + (n - 1));
   const gaps = loadJson(join(prevRound, "gaps", "dev-gap-list.json"), null);
@@ -547,6 +578,7 @@ async function finalreg() {
   const state = loadState();
   if (state.phase !== "frozen-candidate") throw new Error("not frozen-candidate: " + state.phase);
   installExitHooks();
+  await sweepOrphans();
   const plan = loadJson(join(runRoot, "case-plan.json"), null);
   const exe = readExeIdentity(state.round.buildDir, state.round.buildTag);
   const roundDir = join(runRoot, "final");
@@ -583,6 +615,7 @@ async function holdout() {
   const state = loadState();
   if (state.phase !== "holdout") throw new Error("not in holdout phase: " + state.phase);
   installExitHooks();
+  await sweepOrphans();
   const plan = loadJson(join(runRoot, "case-plan.json"), null);
   const exe = readExeIdentity(state.round.buildDir, state.round.buildTag);
   const roundDir = join(runRoot, "hold");

@@ -95,12 +95,14 @@ function removeFromRegistry(pid) {
   saveRegistry(reg);
 }
 
-export function spawnTracked(kind, { cmd, args, cwd, env, label, trialId }) {
+export function spawnTracked(kind, { cmd, args, cwd, env, label, trialId, stdio, visible }) {
   const child = spawn(cmd, args, {
     cwd,
     env,
-    windowsHide: true,
-    stdio: ["ignore", "pipe", "pipe"],
+    // visible=true for GUI apps: SW_HIDE in STARTUPINFO would suppress the
+    // app's first window (learned in preflight: DogDog launched windowless).
+    windowsHide: visible ? false : true,
+    stdio: stdio ?? ["ignore", "pipe", "pipe"],
   });
   const reg = loadRegistry();
   const entry = {
@@ -165,6 +167,27 @@ export function registerExisting(kind, entry) {
   const reg = loadRegistry();
   reg[kind].push(entry);
   saveRegistry(reg);
+}
+
+// Startup healing: a previous controller crash may have left tracked PIDs
+// behind. Kill everything still recorded as alive, then reset the registry.
+export async function sweepOrphans() {
+  const reg = loadRegistry();
+  const all = [...reg.dogdog, ...reg.mocks, ...reg.claude];
+  let killed = [];
+  for (const e of all) {
+    if (e.pid && isAlive(e.pid)) {
+      try {
+        execFileSync("taskkill", ["/PID", String(e.pid), "/T", "/F"], { timeout: 20000 });
+        killed.push(e.pid);
+      } catch { /* gone already */ }
+    }
+  }
+  if (all.length) {
+    saveRegistry({ dogdog: [], mocks: [], claude: [] });
+    timeline({ kind: "sweep-orphans", found: all.length, killed });
+  }
+  return killed;
 }
 
 // Best-effort final cleanup hooks (never throws).
