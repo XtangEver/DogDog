@@ -23,6 +23,16 @@ export async function finalizeResult({
   const task = tasks.find((t) => t.id === caseId);
   if (!task) throw new Error("Unknown case " + caseId);
   const draft = JSON.parse(readFileSync(draftPath, "utf8"));
+  // Mechanical shape normalization (judgments untouched, every change logged).
+  if (Array.isArray(draft.checks)) {
+    for (const c of draft.checks) {
+      const alt = c.mustId ?? c.checkId ?? c.must_id;
+      if (!c.id && alt) {
+        c.id = String(alt);
+        timeline({ kind: "result-fixup", caseId, attempt, field: "checks[].id", why: "normalized from " + ("mustId" in c ? "mustId" : "checkId" in c ? "checkId" : "must_id") });
+      }
+    }
+  }
   const manifest = JSON.parse(
     readFileSync(join(runRootDir, "manifest.json"), "utf8"),
   );

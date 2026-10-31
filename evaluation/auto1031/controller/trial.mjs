@@ -165,9 +165,10 @@ function reviewerPrompt({ caseId, reviewerPkgDir, evidenceDir, runRootDir, draft
 ${visualFindings ? `视觉审查结论（独立视觉审查者返回，供参考）：\n${visualFindings}\n` : ""}
 判定要求：
 - 先核对输入、环境与版本有效性（audit.json / staging 的 process.json / setup 报告），排除检索污染与错误版本。
-- checks 数组：逐个 must（用任务卡 must[].id），passed ∈ true/false/null，observation 写事实判定与理由，evidence 给出相对运行根（${runRootDir}）的证据路径（至少1条）。
-- forbiddenChecks 数组：逐个 mustNot（0 起始 index），absent ∈ true/false，附观察与证据。
-- scores 数组：覆盖任务卡 grading.rubric 全部维度，score ∈ 0|1|2|null，附观察与证据。
+- checks 数组：逐个 must（用任务卡 must[].id），passed ∈ true/false/null，observation 写事实判定与理由，evidence 给出相对运行根（${runRootDir}）的证据路径（至少1条）。每项的准确形状（字段名必须是 id，不是 mustId）：
+  {"id":"<must[].id>","passed":true,"observation":"…","evidence":["trials/…/…json","screenshots/…png"]}
+- forbiddenChecks 数组：逐个 mustNot（0 起始 index），absent ∈ true/false，附观察与证据。形状：{"index":0,"absent":true,"observation":"…","evidence":["…"]}
+- scores 数组：覆盖任务卡 grading.rubric 全部维度，score ∈ 0|1|2|null，附观察与证据。形状：{"dimension":"<rubric维度原文>","score":2,"observation":"…","evidence":["…"]}
 - status 从 {pass, product_failure, infrastructure_failure, grading_dispute, insufficient_evidence, not_implemented, not_run} 中按 SCORING.md 选择；产品崩溃不得一律归环境；目标能力已实现但表现错误用 product_failure 不用 not_implemented。
 - 不确定的写进 limitations；评分规则本身存疑列 grading_dispute。
 - 以下字段由控制器统一填充，你无需提供（写了也会被覆盖）：schemaVersion/runId/caseId/attempt/executionTrack/mockService/blinded/startedAt/endedAt/metrics/reviewer。
