@@ -720,11 +720,53 @@ function finalReport() {
   console.log("final report written");
 }
 
+// Single-case smoke: full pipeline for one case into runRoot/_smoke/<id>[-k].
+// Same manifests/validation as a real round; results do NOT count toward any
+// round gap list (the round runner ignores _smoke).
+async function smokeCase(id) {
+  const state = loadState();
+  installExitHooks();
+  await sweepOrphans();
+  const plan = loadJson(join(runRoot, "case-plan.json"), null);
+  const row = plan?.rows.find((r) => r.id === id);
+  if (!row) throw new Error("unknown case " + id);
+  const exe = readExeIdentity(state.round.buildDir, state.round.buildTag);
+  const attempt = Number(args.find((a, i) => args[i - 1] === "--attempt") ?? 1);
+  const roundDir = join(runRoot, "_smoke", id + (attempt > 1 ? "-a" + attempt : ""));
+  const group = row.group;
+  const packs = {};
+  for (const role of ["runner", "setup", "reviewer"]) {
+    const dir = join(roundDir, "pack-" + role);
+    await packRole({ role, split: row.split, out: dir });
+    packs[role] = dir;
+  }
+  const root = await createRunRoot({
+    roundDir, name: group + "-smoke", group, caseIds: [id], exe,
+    display: displayFromState(state),
+    sourceRevision: state.round.gitSha,
+    suiteVersion: loadJson(join(repo, "evaluation", "catalog.json"), {}).version ?? "1.0.0",
+    appVersion: exe.appVersion,
+    modelInfo: group === "real"
+      ? { protocol: "openai-responses", name: "GLM-5.3", endpoint: "https://open.bigmodel.cn/api/v1/responses", configuration: { credential: "env:GLM_API_KEY (value not recorded)" } }
+      : { protocol: "openai-responses", name: "fixture-mock", endpoint: "per-trial 127.0.0.1", configuration: { scripted: true } },
+  });
+  const res = await runTrial({
+    state, caseRow: row, runRootDir: root,
+    setupPkgDir: packs.setup, reviewerPkgDir: packs.reviewer,
+    exePath: exe.winUnpacked, attempt,
+  });
+  mergeFixtureHashes(root, join(root, "trials", id, "staging"));
+  const rep = sh(`node evaluation/tools/report.mjs --run "${root}"`, { timeoutMs: 300000 });
+  saveLog(join(roundDir, "report.log"), rep.out);
+  console.log("SMOKE RESULT", JSON.stringify({ id, status: res.status, validateRun: res.validateRun?.valid ?? res.validateRun }, null, 1));
+}
+
 async function main() {
   switch (cmd) {
     case "preflight": await preflight(); break;
     case "round0": await round0(); break;
     case "round": await coderRound(Number(args[1])); break;
+    case "case": await smokeCase(String(args[1] ?? "")); break;
     case "finalreg": await finalreg(); break;
     case "holdout": await holdout(); break;
     case "status": status(); break;
