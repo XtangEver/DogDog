@@ -2,7 +2,7 @@
 //   node evaluation/auto1031/controller/campaign.mjs preflight|round0|round <n>|
 //          finalreg|holdout|status|resume|report|stop <reason>
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, statSync, renameSync } from "node:fs";
 import { join, relative } from "node:path";
 import {
   repo, runRoot, ensureRunRoot, loadState, saveState, initialState,
@@ -351,33 +351,65 @@ async function dogdogProbe({ exe, pf, state }) {
 
 async function runCases({ state, roundDir, exe, caseRows, display }) {
   const suiteVersion = loadJson(join(repo, "evaluation", "catalog.json"), {}).version ?? "1.0.0";
-  // fresh role packages for the round
+  const split = caseRows[0]?.split === "holdout" ? "holdout" : "development";
+  // role packages: fresh once per round-dir; reused (marker) when resuming
   const packs = {};
   for (const role of ["runner", "setup", "reviewer"]) {
     const dir = join(roundDir, "pack-" + role);
-    await packRole({ role, split: caseRows[0]?.split === "holdout" ? "holdout" : "development", out: dir });
+    if (!existsSync(join(dir, "_packed"))) {
+      if (existsSync(dir)) {
+        // crashed mid-pack: keep the partial as evidence, repack fresh
+        renameSync(dir, dir + ".partial-" + Date.now());
+      }
+      await packRole({ role, split, out: dir });
+      writeFileSync(join(dir, "_packed"), nowIso(), "utf8");
+    }
     packs[role] = dir;
   }
   const roots = {};
   for (const group of ["real", "mock"]) {
     const ids = caseRows.filter((r) => r.group === group).map((r) => r.id);
     if (!ids.length) continue;
-    roots[group] = await createRunRoot({
-      roundDir, name: (caseRows[0].split === "holdout" ? "hold-" : "dev-") + group,
-      group, caseIds: ids, exe, display,
-      sourceRevision: state.round.gitSha,
-      suiteVersion, appVersion: exe.appVersion,
-      modelInfo: group === "real"
-        ? { protocol: "openai-responses", name: "GLM-5.3", endpoint: "https://open.bigmodel.cn/api/v1/responses", configuration: { credential: "env:GLM_API_KEY (value not recorded)" } }
-        : { protocol: "openai-responses", name: "fixture-mock", endpoint: "per-trial 127.0.0.1 (see trials/<ID>/staging/service/status.json)", configuration: { scripted: true } },
-    });
+    const name = (split === "holdout" ? "hold-" : "dev-") + group;
+    const manifestPath = join(roundDir, name, "manifest.json");
+    if (existsSync(manifestPath)) {
+      roots[group] = join(roundDir, name); // resume: keep existing root
+    } else {
+      roots[group] = await createRunRoot({
+        roundDir, name, group, caseIds: ids, exe, display,
+        sourceRevision: state.round.gitSha,
+        suiteVersion, appVersion: exe.appVersion,
+        modelInfo: group === "real"
+          ? { protocol: "openai-responses", name: "GLM-5.3", endpoint: "https://open.bigmodel.cn/api/v1/responses", configuration: { credential: "env:GLM_API_KEY (value not recorded)" } }
+          : { protocol: "openai-responses", name: "fixture-mock", endpoint: "per-trial 127.0.0.1 (see trials/<ID>/staging/service/status.json)", configuration: { scripted: true } },
+      });
+    }
   }
   const results = {};
   for (const row of caseRows) {
     const stop = budgetCheck(state);
     if (stop) { stopCampaign(state, stop); break; }
     const root = roots[row.group];
+    // resume: a case with any finalized result file is done — never rerun it
+    const trialDir0 = join(root, "trials", row.id);
+    if (existsSync(trialDir0)) {
+      const resultFiles = readdirSync(trialDir0)
+        .filter((f) => /^result(?:-\d+)?\.json$/.test(f))
+        .sort();
+      if (resultFiles.length) {
+        const prior = readJson(join(trialDir0, resultFiles[resultFiles.length - 1]), null);
+        results[row.id] = { status: prior?.status ?? "unknown", attempts: resultFiles.length };
+        mergeFixtureHashes(root, join(trialDir0, "staging"));
+        timeline({ kind: "case-skip-resumed", caseId: row.id, status: prior?.status });
+        continue;
+      }
+    }
+    // resume: crashed attempt left partial attempt dirs — continue numbering
     let attempt = 1;
+    const trialDir = join(root, "trials", row.id);
+    if (existsSync(trialDir)) {
+      attempt = readdirSync(trialDir).filter((d) => /^attempt-/.test(d)).length || 1;
+    }
     let last = null;
     while (attempt <= 3) {
       state.activeTrial = { caseId: row.id, attempt, stage: "pipeline", startedAt: nowIso() };
