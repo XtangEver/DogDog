@@ -1,0 +1,7 @@
+{
+  "mode": "fragmented-tools",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "三协议正确原生工具流，先读取已关联input来源后回答；SSE按1至7字节块切分中文与函数参数。"
+}

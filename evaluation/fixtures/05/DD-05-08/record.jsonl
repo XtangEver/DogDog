@@ -1,0 +1,2 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-05-08-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "服务启动任务：旧进程占用端口；结束旧进程后启动正常。"}]}, "timestamp": "2026-10-20T10:01:00Z"}

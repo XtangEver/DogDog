@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-03-01",
+  "attempt": 1,
+  "pilotId": "P02",
+  "title": "自然提问与当前/归档检索",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:41.890Z",
+  "endedAt": "2026-10-31T03:41:42.352Z",
+  "checks": [
+    {
+      "id": "P02",
+      "passed": true,
+      "observation": "未手动关联来源，固定mock工具循环经过discover/search/read后显示双来源引用，干扰正文未进入请求。",
+      "evidence": ["events.jsonl", "screenshots/P02-searched.png"]
+    }
+  ],
+  "scores": [],
+  "artifacts": ["events.jsonl", "screenshots/P02-searched.png"],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 462,
+    "modelRequests": 4,
+    "cost": 0
+  }
+}

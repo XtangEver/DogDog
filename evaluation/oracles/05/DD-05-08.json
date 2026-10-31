@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-08",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "服务启动任务：旧进程占用端口；结束旧进程后启动正常。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-08/record.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "服务启动任务：旧进程占用端口；结束旧进程后启动正常。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": ["本合成案例不能证明真实用户长期收益或真人主观体验。"],
+  "allowedConclusions": [
+    "周计划可以写目标、优先级、可交付结果和验收时间；按你新的问题组织。",
+    "给每项计划补一个具体交付物和截止时间，再按优先级排序。"
+  ],
+  "forbiddenConclusions": [
+    "周计划首先要停止旧进程并检查端口，否则无法完成。",
+    "把旧话题事实当作个人周计划前提"
+  ],
+  "rubric": [
+    {
+      "dimension": "topic_reset",
+      "zero": "继续旧诊断或泄漏不相关历史",
+      "one": "切换成功但夹带旧项目建议",
+      "two": "新话题目标和长度约束均正确执行"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "周计划可以写目标、优先级、可交付结果和验收时间；按你新的问题组织。",
+      "rationale": "满足本任务必须条件，且结论不超出可观察状态/合成证据。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "周计划首先要停止旧进程并检查端口，否则无法完成。",
+      "rationale": "继续旧诊断或泄漏不相关历史"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "给每项计划补一个具体交付物和截止时间，再按优先级排序。",
+      "rationale": "不同措辞或路径仍满足相同任务边界，不要求复制示范答案。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "切换后只回答新的周计划表达问题，不继续诊断端口"
+    },
+    {
+      "mustId": "C2",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "不把服务启动的项目约束强加给新的通用计划"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-05",
+  "system": "07",
+  "title": "建议转为可验证改进实验",
+  "split": "development",
+  "family": "07-05-report",
+  "capability": "target",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:62"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "missing"],
+  "track": "desktop",
+  "requirements": ["R07-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/07/DD-07-05",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "当前尚未实现持续对话内结构化改进实验及待验证闭环；旧版有重试记录，本案评估未来目标能力。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "建立并回访改进实验",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "我准备采用“先明确验收再让Agent开工”，怎么验证它有没有帮助？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始问题，按回答形成具体观察指标；要求“把它建立为可回访的改进实验，当前标记待验证”。",
+      "observe": "计划与已发生结果区分，且出现公开可查看的实验记录；如果当前无该功能则记录明确缺口并停止。"
+    },
+    {
+      "action": "通过公开入口打开刚创建的实验，核对建议、适用任务、指标和状态。",
+      "observe": "记录不是仅存在于聊天段落，能作为独立跟踪条目回访。"
+    },
+    {
+      "action": "退出并重启同一隔离实例，打开同一实验。",
+      "observe": "原指标和待验证状态恢复，没有因为模型回复或用户同意自动转为已验证。"
+    }
+  ],
+  "completion": {
+    "when": "完成实验创建、查看及跨重启待验证状态核对；若无公开入口，保留not_implemented依据并停止。",
+    "stopAfterMs": 420000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "给出前置验收是否明确、返工定义及记录方式等可检查项",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "区分试验计划与已发生结果，给出可回访的待验证状态",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C3",
+      "description": "通过公开入口创建可回看的改进实验，保存建议、适用任务、观察指标与待验证状态；无入口则记录not_implemented，不以聊天中的计划文字替代。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C4",
+      "description": "退出重启后从实验/跟踪入口回访同一记录，原指标与待验证状态保持；没有后续证据时不得自动改为有效。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": ["捏造尚未发生的改善比例"],
+  "grading": {
+    "oracle": "oracles/07/DD-07-05.json",
+    "rubric": ["experiment_design"],
+    "checks": []
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "用户补充“新任务比旧任务简单很多”",
+      "expectedDifference": "比较需注明任务难度混杂，不直接归因"
+    },
+    {
+      "id": "V2",
+      "change": "用户只愿记录单个后续任务",
+      "expectedDifference": "允许低负担观察，但不宣称稳定规律"
+    }
+  ]
+}

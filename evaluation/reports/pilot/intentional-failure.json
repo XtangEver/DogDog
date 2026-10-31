@@ -1,0 +1,8 @@
+{
+  "id": "G01",
+  "faultInjected": "错误评分器断言模型请求数为-1",
+  "detected": true,
+  "classification": "grading_dispute",
+  "productFailure": false,
+  "evidence": "mock/requests.jsonl"
+}

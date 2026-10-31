@@ -1,0 +1,6 @@
+{"type":"session_meta","payload":{"id":"synthetic-06-03","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"本轮只做CSV导出，明确不做PDF。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"csv","arguments":"{\"cmd\": \"npm test\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"csv","output":"CSV验收PASS：字段编码满足要求"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"业务今天新增要求，需要PDF，CSV仍保留。"}]},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"新增PDF版式需要重新实现分页和字体嵌入。"}]},"timestamp":"2026-10-20T10:00:04Z"}

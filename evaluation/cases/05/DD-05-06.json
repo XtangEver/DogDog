@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-06",
+  "system": "05",
+  "title": "无足够证据时不强行诊断",
+  "split": "development",
+  "family": "05-06-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["missing", "boundary"],
+  "track": "desktop",
+  "requirements": ["R05-06"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-06",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "判断这次返工与需求表达的关系",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "这次返工是不是因为我需求表达得太差？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始消息，按answers条件分支补充，不提供oracle事实。",
+      "observe": "核对本任务必须条件和禁止结果，保存可见回答与引用/相关状态。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "说明缺少原始需求，无法判断表达质量及返工原因",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "不顺着自我责备把单次返工固化成用户能力标签",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["将缺失记录当作未发生沟通的证明", "无证据地认定用户能力差"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-06.json",
+    "rubric": ["uncertainty_boundary"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

@@ -1,0 +1,31 @@
+{
+  "selftestOnly": true,
+  "missingMust": {
+    "accepted": false,
+    "error": "Pass missing required check C2"
+  },
+  "mockSemanticPass": {
+    "accepted": false,
+    "error": "Scripted mock cannot establish semantic core-task quality"
+  },
+  "mismatchedRunId": {
+    "accepted": false,
+    "error": "Result runId differs from manifest"
+  },
+  "staging": {
+    "DD-07-02": {
+      "sessions": ["initial.jsonl"],
+      "deferred": ["followup.jsonl"]
+    },
+    "DD-10-05": {
+      "sessions": ["allowed"],
+      "deferred": ["outside"]
+    }
+  },
+  "runnerPacket": {
+    "containsMust": false,
+    "containsOracle": false,
+    "containsObserve": false,
+    "goal": "我是不是一直不写验收标准，所以这次协作才困难？"
+  }
+}

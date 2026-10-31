@@ -1,0 +1,7 @@
+{"type":"session_meta","payload":{"id":"synthetic-02-02","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"event_msg","payload":{"type":"task_started","turn_id":"retry-1"},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"event_msg","payload":{"type":"user_message","message":"再试一次"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"event_msg","payload":{"type":"agent_message","message":"第一次重试仍报端口占用。"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"event_msg","payload":{"type":"task_started","turn_id":"retry-2"},"timestamp":"2026-10-20T10:00:04Z"}
+{"type":"event_msg","payload":{"type":"user_message","message":"再试一次"},"timestamp":"2026-10-20T10:00:05Z"}
+{"type":"event_msg","payload":{"type":"agent_message","message":"第二次重试先停旧进程，服务就绪。"},"timestamp":"2026-10-20T10:00:06Z"}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-06-05",
+  "system": "06",
+  "title": "无轨迹的一般协作咨询不虚构个人历史",
+  "split": "development",
+  "family": "06-general-guidance-no-trace",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "missing"],
+  "track": "desktop",
+  "requirements": ["R06-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": null,
+    "setup": [
+      "使用全新隔离配置与测试模型服务，不授权或导入任何轨迹目录。",
+      "保留真实模型对话和UI证据；这是一般建议任务，不代表收益已经验证。"
+    ]
+  },
+  "user": {
+    "goal": "我准备第一次用AI做一个小型本地记账工具。想减少来回返工，给我一个简短的协作起手式，不用查历史。",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [
+      "这是首次使用AI做该工具；希望简短一般建议，不需要查询历史。"
+    ],
+    "initialMessage": "我准备第一次用AI做一个小型本地记账工具。想减少来回返工，给我一个简短的协作起手式，不用查历史。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "使用全新隔离配置，不添加轨迹目录；发送initialMessage。",
+      "observe": "直接获得一般建议，不要求先授权目录或导入来源；没有伪造证据引用。"
+    },
+    {
+      "action": "追问“请把它缩到一段可直接复制的提示词。”",
+      "observe": "保持简短并保留范围/约束/验收，不声称已执行或验证效果。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "无需轨迹也给出适合小型本地记账工具的一般协作起手式，明确目标、最小范围、约束和验收。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "把建议表述为通用方法，不能声称来自用户过往习惯；不强制用户导入历史或先回答无关问题。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "捏造你以前经常需求不清等个人经历。",
+    "因没有轨迹拒绝给一般建议。"
+  ],
+  "grading": {
+    "oracle": "oracles/06/DD-06-05.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.test.ts",
+        "command": "npx vitest run tests/agent.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

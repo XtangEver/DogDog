@@ -1,0 +1,3 @@
+{"timestamp": "2026-10-20T10:00:00Z", "type": "session_meta", "payload": {"id": "synthetic-DD-11-06-0", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}}
+{"timestamp": "2026-10-20T10:00:00Z", "type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "粘贴长问题后尝试发送。"}]}}
+{"timestamp": "2026-10-20T10:00:00Z", "type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "这是受控合成配置与界面检查，不代表真实任务效果。"}]}}

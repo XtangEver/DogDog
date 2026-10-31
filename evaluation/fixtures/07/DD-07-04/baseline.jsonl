@@ -1,0 +1,2 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-07-04-baseline.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "原任务验收：中文列名完整、空值保留；首次仅列名通过。"}]}, "timestamp": "2026-10-20T10:01:00Z"}

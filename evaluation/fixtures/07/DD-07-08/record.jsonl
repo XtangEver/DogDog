@@ -1,0 +1,4 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-07-08-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "较早任务：需求复杂且接口未稳定，出现三次返工。"}]}, "timestamp": "2026-10-20T10:01:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "后两次任务：改用更强模型、缩小范围、采用验收清单，均通过。"}]}, "timestamp": "2026-10-20T10:02:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "没有记录投入时长，也没有同难度对照任务。"}]}, "timestamp": "2026-10-20T10:03:00Z"}

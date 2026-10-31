@@ -1,0 +1,3 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-05-148","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"日常记录148：调整无关页面布局。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"记录148未涉及通知重复。"}]},"timestamp":"2026-10-20T10:00:02Z"}

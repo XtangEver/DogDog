@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-02-07-main","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"数据清理脚本验收。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"main-test","arguments":"{\"cmd\": \"check-clean\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"main-test","output":"主会话验收：FAILED，重复记录未删除"},"timestamp":"2026-10-20T10:00:03Z"}

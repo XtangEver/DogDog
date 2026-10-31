@@ -1,0 +1,6 @@
+{"type":"session_meta","payload":{"id":"synthetic-06-01","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"先确认验收：CSV含姓名金额，编码UTF-8，打开无乱码；分两步交付。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"先实现字段与编码，再跑导出和人工打开检查。"}]},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"csv","arguments":"{\"cmd\": \"csv-check\"}"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"csv","output":"字段姓名金额PASS；UTF-8编码PASS；表格软件打开无乱码PASS"},"timestamp":"2026-10-20T10:00:04Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"结果符合预期，没有额外返工。"}]},"timestamp":"2026-10-20T10:00:05Z"}

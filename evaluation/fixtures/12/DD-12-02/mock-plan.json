@@ -1,0 +1,7 @@
+{
+  "mode": "text-exact-path",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "仅/gateway/team-a/custom-response返回正常Responses流；其他path返回404。"
+}

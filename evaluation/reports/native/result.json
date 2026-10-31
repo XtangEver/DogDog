@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-46-50-405Z-native",
+  "caseId": "DD-03-01",
+  "attempt": 1,
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "desktop_proxy",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:47:14.752Z",
+  "endedAt": "2026-10-31T03:48:45.805Z",
+  "checks": [
+    {
+      "id": "N01",
+      "passed": true,
+      "observation": "原生电脑代理通过可见编辑区域输入自然问题并按Enter，未手动关联来源。",
+      "evidence": ["events.jsonl", "answer-tree.txt", "answer.jpg"]
+    },
+    {
+      "id": "N02",
+      "passed": true,
+      "observation": "回答显示两个来源引用，点击S1:L4后原文为归档复测结果，带物理行号及SHA-256。",
+      "evidence": ["evidence-tree.txt", "evidence.jpg"]
+    }
+  ],
+  "scores": [],
+  "artifacts": [
+    "events.jsonl",
+    "start-tree.txt",
+    "answer-tree.txt",
+    "answer.jpg",
+    "evidence-tree.txt",
+    "evidence.jpg"
+  ],
+  "limitations": [
+    "本次为非盲代理用户抽样，mock固定调用工具；不证明真实模型自主推理、完整DD03-01通过或真人体感。",
+    "最初原生控件缓存不可用；刷新窗口绑定后恢复，首次尝试未隐藏。",
+    "helper返回focused_element为文档根；通过屏幕内可见光标和输入文本核对焦点。"
+  ],
+  "reviewer": {
+    "kind": "agent_proxy",
+    "identity": "Codex root using computer-use sky",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 91053,
+    "modelRequests": 4,
+    "cost": 0
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-09-03",
+  "system": "09",
+  "title": "小窗口高缩放关键操作可达",
+  "split": "development",
+  "family": "small-window-high-dpi-layout",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/renderer/ChatApp.tsx:714"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary"],
+  "track": "desktop",
+  "requirements": ["R09-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/09/DD-09-03",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-09-03 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "仅在隔离桌面将显示区域设为1280×720、Windows缩放150%，目标窗口最大化；记录实际OS设置和截图。系统不支持该环境时blocked并说明，不修改正式用户桌面。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "在常见高缩放小屏环境下完成一次有引用的讨论",
+    "brief": "使用1280×720显示区域、Windows缩放150%，窗口最大化；记录实际屏幕配置。",
+    "knownFacts": [
+      "使用1280×720显示区域、Windows缩放150%，窗口最大化；记录实际屏幕配置。"
+    ],
+    "initialMessage": "打开模型设置，完成配置后查看一条引用。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "在常见高缩放小屏环境下完成一次有引用的讨论"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动管理员已设置好指定分辨率与缩放的隔离实例；打开模型设置并填写服务、目录及发送权限。",
+      "observe": "字段和保存按钮可通过正常滚动或键盘到达，不被无法关闭的遮挡覆盖。"
+    },
+    {
+      "action": "发送问题，打开证据弹窗，滚动阅读并关闭，再保存报告。",
+      "observe": "输入框、停止/发送、证据关闭与报告入口均可达，正文无永久裁切。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "指定分辨率缩放下可完成配置、发送、引用关闭与报告保存。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "无需降低缩放、改源码、调用私有IPC或移动窗口到屏幕外才能操作。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "弹窗保存或关闭永久落在屏幕外，只能用开发者工具解锁。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/09/DD-09-03.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

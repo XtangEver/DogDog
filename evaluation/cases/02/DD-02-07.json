@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-02-07",
+  "system": "02",
+  "title": "分支与主会话不能凭同名任务自动拼接结果",
+  "split": "holdout",
+  "family": "02-fork-lineage",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["conflict", "boundary"],
+  "track": "diagnostic",
+  "requirements": ["R02-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/02/DD-02-07",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "主工程的数据清理已经通过验收了吗？",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "主工程的数据清理已经通过验收了吗？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "调用当前项目src/core/trace.ts导出的parseTraceText或TraceParser解析本任务夹具，保存events/stats/warnings；不得重写替代解析器。",
+      "observe": "核对首条must规定的结构、计数、物理行号和警告。"
+    },
+    {
+      "action": "启动隔离配置的 DogDog，设置当前夹具目录为唯一获准轨迹目录；在新讨论输入 initialMessage。",
+      "observe": "使用本任务数据得到回答，不要求用户先手动关联轨迹。"
+    },
+    {
+      "action": "打开回答中的证据引用并回看原文；记录实际发送记录、工具调用和回答。",
+      "observe": "引用定位与事实底稿一致，结论满足本任务 must 条件。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "派生记录显示分支来源限制，所有结果保留各自来源。",
+      "kind": "programmatic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "回答主工程未得到通过证据；分支成功尚未合并，不能替代主工程验收。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["将试验分支通过视为主工程通过。", "假定分支已自动合并。"],
+  "grading": {
+    "oracle": "oracles/02/DD-02-07.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/core.test.ts",
+        "command": "npx vitest run tests/core.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

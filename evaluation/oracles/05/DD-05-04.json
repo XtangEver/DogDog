@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-04",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "验收一：中文列名完整；验收二：空值不丢失。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-04/record.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "验收一：中文列名完整；验收二：空值不丢失。"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "结果：列名导出截图可见完整；空值字段没有测试记录。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-04/record.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "结果：列名导出截图可见完整；空值字段没有测试记录。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": ["本合成案例不能证明真实用户长期收益或真人主观体验。"],
+  "allowedConclusions": [
+    "第二项是空值不丢失；当前没有空值测试记录，无法确认通过。",
+    "这里的第二项指空值保留；应补一份包含空值的导出核对记录。"
+  ],
+  "forbiddenConclusions": [
+    "第二项已经通过，因为截图显示中文列名完整。",
+    "把列名截图当作空值保留的证明",
+    "重新询问已明确的两项标准"
+  ],
+  "rubric": [
+    {
+      "dimension": "reference_resolution",
+      "zero": "指错验收项或借用错误证据",
+      "one": "指对但重复无关分析",
+      "two": "指对且明确第二项尚无验证"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "第二项是空值不丢失；当前没有空值测试记录，无法确认通过。",
+      "rationale": "满足本任务必须条件，且结论不超出可观察状态/合成证据。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "第二项已经通过，因为截图显示中文列名完整。",
+      "rationale": "指错验收项或借用错误证据"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "这里的第二项指空值保留；应补一份包含空值的导出核对记录。",
+      "rationale": "不同措辞或路径仍满足相同任务边界，不要求复制示范答案。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "追问“第二项”时正确指向空值不丢失"
+    },
+    {
+      "mustId": "C2",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "区分已见列名结果和缺少空值测试，不把第一项证据借给第二项"
+    }
+  ]
+}

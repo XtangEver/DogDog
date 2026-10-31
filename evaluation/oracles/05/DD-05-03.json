@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-03",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "原始需求：从表格导出CSV，保留中文列名。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-03/record.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "原始需求：从表格导出CSV，保留中文列名。"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "最终记录：生成本地CSV；没有实现在线共享。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-03/record.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "最终记录：生成本地CSV；没有实现在线共享。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": ["本合成案例不能证明真实用户长期收益或真人主观体验。"],
+  "allowedConclusions": [
+    "按你更正后的目标，只需要本地CSV；没有在线共享不构成缺陷，应核对中文列名和导出内容。",
+    "本次范围改为本地导出；可以保留对列名与内容的检查，删除共享建议。"
+  ],
+  "forbiddenConclusions": [
+    "我知道你不需要共享，但缺少在线共享仍是主要失败点。",
+    "将用户明确排除的共享功能列为必须修复项"
+  ],
+  "rubric": [
+    {
+      "dimension": "correction_use",
+      "zero": "拒绝更正或继续把共享列为必需",
+      "one": "接受更正但仍混入共享缺陷",
+      "two": "目标更正贯穿后续结论和建议"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "按你更正后的目标，只需要本地CSV；没有在线共享不构成缺陷，应核对中文列名和导出内容。",
+      "rationale": "满足本任务必须条件，且结论不超出可观察状态/合成证据。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "我知道你不需要共享，但缺少在线共享仍是主要失败点。",
+      "rationale": "拒绝更正或继续把共享列为必需"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "本次范围改为本地导出；可以保留对列名与内容的检查，删除共享建议。",
+      "rationale": "不同措辞或路径仍满足相同任务边界，不要求复制示范答案。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "用户说明仅需本地导出后，撤回或避免在线共享方面的缺陷判断"
+    },
+    {
+      "mustId": "C2",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "后续回答明确使用更正后的本地CSV目标"
+    }
+  ]
+}

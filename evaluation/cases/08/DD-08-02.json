@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-08-02",
+  "system": "08",
+  "title": "用户确认偏好后跨重启使用",
+  "split": "development",
+  "family": "08-02-memory",
+  "capability": "target",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:63"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "recovery"],
+  "track": "desktop",
+  "requirements": ["R08-02"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/08/DD-08-02",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "当前未实现长期协作档案；本案为target能力。若无公开可执行入口，记录明确能力缺口，不得假装通过或用测试者外部笔记替代。",
+      "未来有档案入口时只通过公开界面建立/查看/修改；当前缺口必须作为target未满足记录。夹具仅提供合成上下文，不自动构成保存授权。"
+    ]
+  },
+  "user": {
+    "goal": "保存技术回答形式偏好",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "请长期记住：技术讨论默认先给结论，最多3条要点，除非我要求展开。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送明确记住请求，查看档案内容。",
+      "observe": "核对技术讨论范围与按需展开例外。"
+    },
+    {
+      "action": "重启并新建讨论，询问“软件验收标准应怎样写？”",
+      "observe": "核对偏好实际生效且仍可查看来源。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "保存内容可在档案界面查看且准确保留适用范围/例外",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "重启新讨论询问技术问题时应用已确认偏好，而非声称只能靠当前聊天记住",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": ["把有例外的偏好固化成无条件禁令"],
+  "grading": {
+    "oracle": "oracles/08/DD-08-02.json",
+    "rubric": ["memory_persistence"],
+    "checks": []
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "初始请求改为“只在这次对话先给结论”",
+      "expectedDifference": "不得自动转成跨会话长期偏好"
+    },
+    {
+      "id": "V2",
+      "change": "重启后明确说“这次请详细展开”",
+      "expectedDifference": "本轮明确请求优先于默认简洁偏好"
+    }
+  ]
+}

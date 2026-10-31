@@ -1,0 +1,2 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-10-07-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "来源标记：EXCLUDED_SOURCE_10_07；停止旧进程后服务启动正常。"}]}, "timestamp": "2026-10-20T10:01:00Z"}

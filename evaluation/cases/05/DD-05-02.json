@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-02",
+  "system": "05",
+  "title": "必要追问后跨重启继续",
+  "split": "development",
+  "family": "05-02-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["missing", "recovery"],
+  "track": "desktop",
+  "requirements": ["R05-02"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-02",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "补充压缩工具的验收条件并继续讨论",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "帮我复盘这次压缩工具任务，但请先确认你判断成功所需的条件。",
+    "answers": [
+      {
+        "when": "询问验收或成功条件",
+        "reply": "每张不超过500KB，肉眼无明显色块；只要求单张处理，不需要批量。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始问题，等待必要追问。",
+      "observe": "记录问题确实与缺少的验收条件有关。"
+    },
+    {
+      "action": "退出并重启隔离实例，打开同一讨论，回答允许补充内容。",
+      "observe": "观察原追问/上下文恢复，后续只按补充的单张条件讨论。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "围绕缺失验收条件提出必要澄清，不重复追问轨迹已经说明的目标",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "暂停或完成追问后重启，用户补充的条件在后续分析中正确使用",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C3",
+      "description": "不在补充条件前擅自认定任务失败",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["把尚未约定的指标当成已违约", "重启后要求重述全部背景"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-02.json",
+    "rubric": ["clarification_continuity"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

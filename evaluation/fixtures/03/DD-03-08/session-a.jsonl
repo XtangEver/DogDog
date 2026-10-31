@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-08-a","cwd":"D:\\synthetic-work\\portal-east","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"修复工作台登录回跳。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"east","arguments":"{\"cmd\": \"npm test\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"east","output":"东区工作台回跳PASS：保留原目标页"},"timestamp":"2026-10-20T10:00:02Z"}

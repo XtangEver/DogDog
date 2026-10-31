@@ -1,0 +1,3 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-07-07-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "建议：需求开始前列出三个验收条件。"}]}, "timestamp": "2026-10-20T10:01:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "后续：用户列了条件，但需求方中途改变输出格式，仍返工两次。"}]}, "timestamp": "2026-10-20T10:02:00Z"}

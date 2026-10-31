@@ -1,0 +1,5 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-03-a","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"中文检索里输入全角空格找不到结果。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"normalizeQuery只处理ASCII空格，新增全角空格归一化。"}]},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"q","arguments":"{\"cmd\": \"query-check\"}"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"q","output":"全角空格用例PASS：青石合同可检索"},"timestamp":"2026-10-20T10:00:04Z"}

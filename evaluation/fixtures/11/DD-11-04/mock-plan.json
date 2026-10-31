@@ -1,0 +1,7 @@
+{
+  "mode": "http503-secret",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "首次HTTP503，正文含DD-SYNTHETIC-SECRET和内部错误标记；管理员切换后恢复正常文本。"
+}

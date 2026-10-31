@@ -1,0 +1,7 @@
+{
+  "mode": "delayed-tool",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "首次请求收到后暂停响应；撤权保存后管理员释放调用search_traces的响应，记录是否出现后续请求。"
+}

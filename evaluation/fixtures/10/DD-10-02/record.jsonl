@@ -1,0 +1,2 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-10-02-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "授权阶段可读标记：REVOKED_CONTENT_10_02；启动问题是端口占用。"}]}, "timestamp": "2026-10-20T10:01:00Z"}

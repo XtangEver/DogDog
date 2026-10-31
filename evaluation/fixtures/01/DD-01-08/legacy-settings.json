@@ -1,0 +1,5 @@
+{
+  "baseUrl": "http://127.0.0.1:PORT/responses",
+  "model": "legacy-fixture",
+  "maxInputChars": 60000
+}

@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-01-b","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-21T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"继续蓝鲸表格导出的字体修复。"}]},"timestamp":"2026-10-21T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"font-b","arguments":"{\"cmd\": \"check-pdf\"}"},"timestamp":"2026-10-21T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"font-b","output":"嵌入字体检查PASS，抽样文字正确：销售汇总"},"timestamp":"2026-10-21T10:00:03Z"}

@@ -1,0 +1,2 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-07-02-initial.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "初始记录：导出文件已生成；未测试空值字段。"}]}, "timestamp": "2026-10-20T10:01:00Z"}

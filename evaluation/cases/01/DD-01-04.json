@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-01-04",
+  "system": "01",
+  "title": "未勾选发送权限时明确阻止",
+  "split": "development",
+  "family": "permission-not-granted",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.e2e.ts:344"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary", "missing", "correction"],
+  "track": "desktop",
+  "requirements": ["R01-04"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/01/DD-01-04",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-01-04 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/01/DD-01-04/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=text；执行者仅获URL与合成key。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "确认未授权时不会发送任何讨论或轨迹",
+    "brief": "已填服务与模型但明确不勾选发送权限。",
+    "knownFacts": ["已填服务与模型但明确不勾选发送权限。"],
+    "initialMessage": "保存未授权配置，然后问“帮我查看启动故障”。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "确认未授权时不会发送任何讨论或轨迹"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "配置回环服务、模型和合成key，目录为案例codex/sessions，但保持发送权限未勾选，保存。",
+      "observe": "设置可保存，授权状态未自动变成已勾选。"
+    },
+    {
+      "action": "输入问题按Enter；打开可见发送记录。",
+      "observe": "明确提示缺少发送权限，没有网络请求，能通过设置补授权。"
+    },
+    {
+      "action": "再次打开设置，主动勾选并保存，再发送原问题。",
+      "observe": "收到正常回复，仅主动授权后请求数增长。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "未授权阶段全部网络请求为0，包括问题文本和导入快照。",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "界面给出可操作的授权位置，授权后原任务能继续。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "表面显示未授权但仍把用户问题发出，或者自动勾选权限。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/01/DD-01-04.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

@@ -1,0 +1,6 @@
+runs/
+packages/
+.cache/
+!reports/
+!fixtures/**/*.jsonl
+!reports/**/*.jsonl

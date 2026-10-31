@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-12-03",
+  "system": "12",
+  "title": "协议错配错误可定位且不自动降级",
+  "split": "development",
+  "family": "protocol-mismatch-correction",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/core.test.ts:484"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["error", "correction"],
+  "track": "desktop",
+  "requirements": ["R12-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/12/DD-12-03",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-12-03 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/12/DD-12-03/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=anthropic-only；执行者仅获URL与合成key。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "选错协议后能够明确纠正配置",
+    "brief": "服务只返回Anthropic流，初次故意选择Responses。",
+    "knownFacts": ["服务只返回Anthropic流，初次故意选择Responses。"],
+    "initialMessage": "先以错误协议发送，再修正为Anthropic。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "选错协议后能够明确纠正配置"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "服务URL保持不变，选择Responses，对只返回Anthropic事件的服务发送一次。",
+      "observe": "不能把无法解析的流当成功空答案或完整报告。"
+    },
+    {
+      "action": "打开设置将协议明确改为Anthropic并主动再发。",
+      "observe": "匹配后正常显示文本；不偷偷试发其他端点或回退协议。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "错配响应明确失败/未完成，不产生成功空报告。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "用户明确修改协议后恢复，无未声明的自动降级请求或密钥转发。",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": [
+    "错配时显示空的已完成报告，或自动探测多个服务端点并转发凭据。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/12/DD-12-03.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

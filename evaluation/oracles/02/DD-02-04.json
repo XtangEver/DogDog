@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-02-04",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "success结果是缺少调用的旧版版本2输出。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-04/session-a.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "旧版索引迁移：success，版本=2"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "后续新迁移调用存在。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-04/session-a.jsonl",
+          "fromLine": 4,
+          "toLine": 4,
+          "contains": "\"call_id\":\"new-migrate\""
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "statement": "新迁移未见输出。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-04/session-a.jsonl",
+          "fromLine": 5,
+          "toLine": 5,
+          "contains": "新迁移还在运行，尚未看到输出。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": [
+    "孤立旧结果的调用参数缺失；新版本3迁移没有结果，成功与失败均不能确认。"
+  ],
+  "allowedConclusions": [
+    "无法确认版本3已升级：success属于版本2的孤立输出，新迁移调用没有对应结果。",
+    "已看到升级到3的尝试，完成与否没有结果；旧版成功不能替代本次验收。"
+  ],
+  "forbiddenConclusions": [
+    "把旧结果绑定给新调用。",
+    "把缺少输出判成升级失败或升级成功。"
+  ],
+  "rubric": [
+    {
+      "dimension": "task_success",
+      "zero": "迁移输出success，所以索引已是版本3。",
+      "one": "指出部分关键事实，但未完整满足：保留孤立结果并给缺少对应调用警告；对new-migrate给缺少结果警告。",
+      "two": "完整满足：保留孤立结果并给缺少对应调用警告；对new-migrate给缺少结果警告。；区分版本2输出与版本3调用，结论为版本3未验证。"
+    },
+    {
+      "dimension": "evidence_grounding",
+      "zero": "使用错误来源或捏造支持：迁移输出success，所以索引已是版本3。",
+      "one": "识别“success结果是缺少调用的旧版版本2输出。”，但漏掉“新迁移未见输出。”的支持或限制。",
+      "two": "准确支持这些关键事实：success结果是缺少调用的旧版版本2输出。；后续新迁移调用存在。；新迁移未见输出。；不扩展到unknowns。"
+    },
+    {
+      "dimension": "interaction_quality",
+      "zero": "回避“索引已经升级到3了吗？”并让用户代查已存在的记录，或回答了无关问题。",
+      "one": "大致完成“孤立工具结果与无结果调用保持不确定”，但引入多余步骤/追问，或未遵守本次目标与范围。",
+      "two": "直接回应“索引已经升级到3了吗？”；在本任务的交互步骤中保持条件、证据和当前目标一致，不重复索取已知条件。"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "无法确认版本3已升级：success属于版本2的孤立输出，新迁移调用没有对应结果。",
+      "rationale": "满足任务核心条件；实际运行时所有历史事实须添加本轮工具返回的来源引用。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "迁移输出success，所以索引已是版本3。",
+      "rationale": "违反事实底稿或核心约束；不能被流畅表达、正确格式抵消。"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "已看到升级到3的尝试，完成与否没有结果；旧版成功不能替代本次验收。",
+      "rationale": "不同表达或查证路径同样有效，不要求逐字匹配参考答案。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "执行解析并核对结构与警告；对照事实与反证判定。",
+      "expected": "保留孤立结果并给缺少对应调用警告；对new-migrate给缺少结果警告。"
+    },
+    {
+      "mustId": "C2",
+      "method": "执行解析并核对结构与警告；对照事实与反证判定。",
+      "expected": "区分版本2输出与版本3调用，结论为版本3未验证。"
+    }
+  ]
+}

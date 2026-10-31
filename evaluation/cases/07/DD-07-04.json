@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-04",
+  "system": "07",
+  "title": "重试记录对照原验收不宣称因果",
+  "split": "development",
+  "family": "07-04-report",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:62"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "boundary", "recovery"],
+  "track": "desktop",
+  "requirements": ["R07-04"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/07/DD-07-04",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "先用baseline.jsonl在旧版流程生成复盘，原验收逐行填“中文列名完整”“空值保留”；随后通过重试对比导入retry.jsonl。"
+    ],
+    "inputFiles": ["baseline.jsonl"]
+  },
+  "user": {
+    "goal": "记录后续重试结果",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "操作任务：在旧版复盘中关联后续重试，并逐项记录原验收结果。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "关联重试，逐项记录两标准达成及混杂因素，保存验证结果。",
+      "observe": "检查原验收标准没有被改成更容易的标准。"
+    },
+    {
+      "action": "重启并回看重试与对比。",
+      "observe": "确认采用建议、用户记录和混杂因素仍在。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "通过“重试与对比”按原两项验收记录结果并保存，重启可回看",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "结果标注为用户记录/观察，保留同时更换依赖这一混杂因素",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C3",
+      "description": "单次对比不被表述为已证明建议导致改善",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["更改原验收以制造成功", "以单次比较宣称因果已证实"],
+  "grading": {
+    "oracle": "oracles/07/DD-07-04.json",
+    "rubric": ["retry_attribution"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "旧版复盘、重试与持久化工程回归；不替代本任务的桌面操作与归因语义检查"
+      }
+    ]
+  },
+  "variants": []
+}

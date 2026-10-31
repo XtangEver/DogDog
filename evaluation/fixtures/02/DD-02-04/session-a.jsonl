@@ -1,0 +1,5 @@
+{"type":"session_meta","payload":{"id":"synthetic-02-04","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"验证索引升级是否成功。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"lost-call","output":"旧版索引迁移：success，版本=2"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"new-migrate","arguments":"{\"cmd\": \"migrate --version 3\"}"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"新迁移还在运行，尚未看到输出。"}]},"timestamp":"2026-10-20T10:00:04Z"}

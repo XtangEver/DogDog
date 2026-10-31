@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-06-07-followup","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-21T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"已清理磁盘到8 GB，代码和模型都不变。"}]},"timestamp":"2026-10-21T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"build-b","arguments":"{\"cmd\": \"npm run build\"}"},"timestamp":"2026-10-21T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"build-b","output":"构建PASS：生成安装包完成"},"timestamp":"2026-10-21T10:00:03Z"}

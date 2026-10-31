@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^DD-\\d{2}-0[1-8]$"
+    },
+    "system": {
+      "type": "string",
+      "pattern": "^(0[1-9]|1[0-2])$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "split": {
+      "type": "string",
+      "enum": ["development", "holdout"]
+    },
+    "family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capability": {
+      "type": "string",
+      "enum": ["current", "target"]
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["synthetic", "history_adapted"]
+        },
+        "sources": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "privacy": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["kind", "sources", "privacy"],
+      "additionalProperties": false
+    },
+    "tags": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "track": {
+      "type": "string",
+      "enum": ["desktop", "diagnostic", "semantic"]
+    },
+    "requirements": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fixtureDir": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputFiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "setup": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": ["profile", "protocol", "fixtureDir", "setup"],
+      "additionalProperties": {}
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brief": {
+          "type": "string",
+          "minLength": 1
+        },
+        "knownFacts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "initialMessage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "when": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reply": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["when", "reply"],
+            "additionalProperties": false
+          }
+        },
+        "unknownReply": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "goal",
+        "brief",
+        "knownFacts",
+        "initialMessage",
+        "answers",
+        "unknownReply"
+      ],
+      "additionalProperties": false
+    },
+    "steps": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observe": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["action", "observe"],
+        "additionalProperties": false
+      }
+    },
+    "completion": {
+      "type": "object",
+      "properties": {
+        "when": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stopAfterMs": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxUserTurns": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": ["when", "stopAfterMs", "maxUserTurns"],
+      "additionalProperties": false
+    },
+    "must": {
+      "minItems": 2,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["programmatic", "semantic", "desktop"]
+          },
+          "gate": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "description", "kind", "gate"],
+        "additionalProperties": false
+      }
+    },
+    "mustNot": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "grading": {
+      "type": "object",
+      "properties": {
+        "oracle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rubric": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "entry": {
+                "type": "string",
+                "minLength": 1
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["entry", "command", "purpose"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["oracle", "rubric", "checks"],
+      "additionalProperties": false
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "change": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expectedDifference": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["id", "change", "expectedDifference"],
+        "additionalProperties": {}
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "system",
+    "title",
+    "split",
+    "family",
+    "capability",
+    "provenance",
+    "tags",
+    "track",
+    "requirements",
+    "environment",
+    "user",
+    "steps",
+    "completion",
+    "must",
+    "mustNot",
+    "grading",
+    "variants"
+  ],
+  "additionalProperties": {}
+}

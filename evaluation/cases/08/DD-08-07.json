@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-08-07",
+  "system": "08",
+  "title": "档案来源过期与有效性复核",
+  "split": "holdout",
+  "family": "08-07-memory",
+  "capability": "target",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:63"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["conflict", "correction"],
+  "track": "desktop",
+  "requirements": ["R08-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/08/DD-08-07",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "当前未实现长期协作档案；本案为target能力。若无公开可执行入口，记录明确能力缺口，不得假装通过或用测试者外部笔记替代。",
+      "用公开流程建立一条有旧观察来源的方法档案；随后关联新观察，检查依据与状态更新。",
+      "未来有档案入口时只通过公开界面建立/查看/修改；当前缺口必须作为target未满足记录。夹具仅提供合成上下文，不自动构成保存授权。",
+      "初始仅使用initial.jsonl建立旧观察的档案；条目保存后，再从deferred-fixtures显式关联followup.jsonl提供新观察。"
+    ],
+    "inputFiles": ["initial.jsonl"]
+  },
+  "user": {
+    "goal": "查询档案中旧方法的有效性依据",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "档案里“加验收清单能减少返工”现在还能算已验证吗？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "通过公开界面打开管理员已准备的协作档案，查看先写验收的经验条目及其来源；若没有档案入口则停止并记录缺口。",
+      "observe": "档案条目可以回到首次成功观察，缺少入口时判not_implemented，不用聊天回复冒充档案。"
+    },
+    {
+      "action": "通知管理员按setup加入后续合成反例，再发送initialMessage；按answers补充背景。",
+      "observe": "档案依据界面保留原观察及新增反例，回答不再把单次成功泛化为稳定效果。"
+    },
+    {
+      "action": "在公开档案界面确认将该经验修订为待验证或限定条件，退出重启后重新查看。",
+      "observe": "修订状态、用户确认及两份证据可回看，未删除旧依据，也未只把结论留在聊天文本中。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "档案可查看原依据及后来反例，不隐藏新证据",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "把普遍有效性降为待验证或限定适用条件，不虚构统计证实",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C3",
+      "description": "用户通过公开档案界面确认修订后，重启仍保留待验证或限定条件状态及原始/反例证据；没有档案功能记not_implemented",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "将旧弱证据永久固化为普遍规律",
+    "仅在聊天里说已更新就宣称已维护可控档案，或用外部笔记代替DogDog档案持久化。"
+  ],
+  "grading": {
+    "oracle": "oracles/08/DD-08-07.json",
+    "rubric": ["memory_evidence_revision"],
+    "checks": []
+  },
+  "variants": []
+}

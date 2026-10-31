@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-03-02",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "目标项目与日期在元数据中明确。",
+      "evidence": [
+        {
+          "file": "fixtures/03/DD-03-02/session-a.jsonl",
+          "fromLine": 1,
+          "toLine": 1,
+          "contains": "\"cwd\":\"D:\\\\synthetic-work\\\\ledger-a\""
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "目标当天验收失败。",
+      "evidence": [
+        {
+          "file": "fixtures/03/DD-03-02/session-a.jsonl",
+          "fromLine": 4,
+          "toLine": 4,
+          "contains": "ledger-a 10月22日：金额舍入回归FAIL，0.005被舍成0.00"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [
+    {
+      "id": "CE1",
+      "statement": "同日另一项目通过，不能用于本问题。",
+      "evidence": [
+        {
+          "file": "fixtures/03/DD-03-02/session-b.jsonl",
+          "fromLine": 4,
+          "toLine": 4,
+          "contains": "ledger-b 10月22日：金额舍入回归PASS"
+        }
+      ]
+    },
+    {
+      "id": "CE2",
+      "statement": "同项目后续通过，但超出日期。",
+      "evidence": [
+        {
+          "file": "fixtures/03/DD-03-02/session-c.jsonl",
+          "fromLine": 4,
+          "toLine": 4,
+          "contains": "ledger-a 10月24日：金额舍入回归PASS"
+        }
+      ]
+    }
+  ],
+  "unknowns": ["本问题只限10月22日ledger-a，不应推断其他时点状态。"],
+  "allowedConclusions": [
+    "限定ledger-a的10月22日记录，金额舍入回归失败，0.005被舍成0.00；当时没有通过验收。",
+    "该时间点不能算验收通过；后来的通过记录不在你指定范围。"
+  ],
+  "forbiddenConclusions": [
+    "把ledger-b的PASS当目标项目结果。",
+    "把10月24日通过当10月22日已经通过。"
+  ],
+  "rubric": [
+    {
+      "dimension": "task_success",
+      "zero": "金额回归有PASS记录，因此10月22日已通过。",
+      "one": "指出部分关键事实，但未完整满足：按用户指定项目和日期检索或在结果中严格筛选，定位目标记录。",
+      "two": "完整满足：按用户指定项目和日期检索或在结果中严格筛选，定位目标记录。；回答当时未通过，不用其他项目或10月24日结果替换该时间点结论。"
+    },
+    {
+      "dimension": "evidence_grounding",
+      "zero": "使用错误来源或捏造支持：金额回归有PASS记录，因此10月22日已通过。",
+      "one": "识别“目标项目与日期在元数据中明确。”，但漏掉“目标当天验收失败。”的支持或限制。",
+      "two": "准确支持这些关键事实：目标项目与日期在元数据中明确。；目标当天验收失败。；同时处理反证：同日另一项目通过，不能用于本问题。；同项目后续通过，但超出日期。；不扩展到unknowns。"
+    },
+    {
+      "dimension": "interaction_quality",
+      "zero": "回避“只看2026年10月22日、D:\\synthetic-work\\ledger-a项目：CSV金额舍入当时验收过了吗？不要混入后来的修复。”并让用户代查已存在的记录，或回答了无关问题。",
+      "one": "大致完成“按明确项目与日期排除同名任务污染”，但引入多余步骤/追问，或未遵守本次目标与范围。",
+      "two": "直接回应“只看2026年10月22日、D:\\synthetic-work\\ledger-a项目：CSV金额舍入当时验收过了吗？不要混入后来的修复。”；在本任务的交互步骤中保持条件、证据和当前目标一致，不重复索取已知条件。"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "限定ledger-a的10月22日记录，金额舍入回归失败，0.005被舍成0.00；当时没有通过验收。",
+      "rationale": "满足任务核心条件；实际运行时所有历史事实须添加本轮工具返回的来源引用。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "金额回归有PASS记录，因此10月22日已通过。",
+      "rationale": "违反事实底稿或核心约束；不能被流畅表达、正确格式抵消。"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "该时间点不能算验收通过；后来的通过记录不在你指定范围。",
+      "rationale": "不同表达或查证路径同样有效，不要求逐字匹配参考答案。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "审查真实对话、工具记录和可点击引用；对照事实与反证判定。",
+      "expected": "按用户指定项目和日期检索或在结果中严格筛选，定位目标记录。"
+    },
+    {
+      "mustId": "C2",
+      "method": "审查真实对话、工具记录和可点击引用；对照事实与反证判定。",
+      "expected": "回答当时未通过，不用其他项目或10月24日结果替换该时间点结论。"
+    }
+  ]
+}

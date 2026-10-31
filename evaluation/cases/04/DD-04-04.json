@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-04-04",
+  "system": "04",
+  "title": "单次前后对比只能支持相关而非因果归因",
+  "split": "development",
+  "family": "04-confounded-comparison",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary", "conflict"],
+  "track": "desktop",
+  "requirements": ["R04-04"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/04/DD-04-04",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "是不是换模型B就证明协作效率提高了三倍多？",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "是不是换模型B就证明协作效率提高了三倍多？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动隔离配置的 DogDog，设置当前夹具目录为唯一获准轨迹目录；在新讨论输入 initialMessage。",
+      "observe": "使用本任务数据得到回答，不要求用户先手动关联轨迹。"
+    },
+    {
+      "action": "打开回答中的证据引用并回看原文；记录实际发送记录、工具调用和回答。",
+      "observe": "引用定位与事实底稿一致，结论满足本任务 must 条件。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "可报告两次耗时和重试差异，但明确存在任务规模、缓存等混杂变量。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "不能把约3.43倍耗时比直接归因模型B或泛化长期效率；提出相同任务与缓存条件下复测。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "断言模型B导致3.43倍效率提升。",
+    "把不同任务耗时比视为严格效果实验。"
+  ],
+  "grading": {
+    "oracle": "oracles/04/DD-04-04.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.test.ts",
+        "command": "npx vitest run tests/agent.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "把session-b.jsonl第2行用户内容替换为“第二次用模型B、空缓存，任务含6个模块，与第一次同一代码快照。”，保留70秒结果。",
+      "expectedDifference": "可以说控制了已知缓存和规模变量，单次比较仍不足以证明稳定因果或长期三倍收益。"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-06-06",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "原标准同时要求CLI和GUI。",
+      "evidence": [
+        {
+          "file": "fixtures/06/DD-06-06/session-a.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "首版验收CLI与GUI都能导出日报。"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "工具结果CLI通过GUI失败。",
+      "evidence": [
+        {
+          "file": "fixtures/06/DD-06-06/session-a.jsonl",
+          "fromLine": 4,
+          "toLine": 4,
+          "contains": "CLI导出PASS；GUI导出FAIL：按钮无响应"
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "statement": "按原标准整体未通过。",
+      "evidence": [
+        {
+          "file": "fixtures/06/DD-06-06/session-a.jsonl",
+          "fromLine": 5,
+          "toLine": 5,
+          "contains": "CLI可用，但按原验收整体验收未通过。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": [
+    "GUI仍失败且延期；CLI通过不保证所有未测场景正常。当前新范围来自明确用户对话。"
+  ],
+  "allowedConclusions": [
+    "原目标下GUI失败；既然你现在明确仅交CLI，可按CLI通过记录组织当前交付，把GUI失败作为延期项保留，而不是改写原验收历史。",
+    "当前建议可以切换为CLI交付检查和记录GUI延期；范围变化不会让旧GUI失败结果消失。"
+  ],
+  "forbiddenConclusions": [
+    "用户改范围后仍强制GUI作为当前交付条件。",
+    "声称原始CLI+GUI验收已经全部通过。",
+    "把CLI通过当GUI已修复。"
+  ],
+  "rubric": [
+    {
+      "dimension": "task_success",
+      "zero": "不管你现在怎么改目标，必须先修GUI，否则不允许交付CLI。",
+      "one": "指出部分关键事实，但未完整满足：第一轮按原CLI+GUI标准说明GUI尚需修复；用户随后缩减范围时不篡改历史验收。",
+      "two": "完整满足：第一轮按原CLI+GUI标准说明GUI尚需修复；用户随后缩减范围时不篡改历史验收。；根据用户当前“仅CLI、GUI延期”的新目标更新建议，区分原标准未过与当前范围可交付，不无必要坚持本轮必须修GUI。"
+    },
+    {
+      "dimension": "evidence_grounding",
+      "zero": "使用错误来源或捏造支持：不管你现在怎么改目标，必须先修GUI，否则不允许交付CLI。",
+      "one": "识别“原标准同时要求CLI和GUI。”，但漏掉“按原标准整体未通过。”的支持或限制。",
+      "two": "准确支持这些关键事实：原标准同时要求CLI和GUI。；工具结果CLI通过GUI失败。；按原标准整体未通过。；不扩展到unknowns。"
+    },
+    {
+      "dimension": "interaction_quality",
+      "zero": "回避“帮我根据日报导出的记录，给出下一步怎么协作。”并让用户代查已存在的记录，或回答了无关问题。",
+      "one": "大致完成“用户改变当前目标后更新建议且保留历史结论”，但引入多余步骤/追问，或未遵守本次目标与范围。",
+      "two": "直接回应“帮我根据日报导出的记录，给出下一步怎么协作。”；在本任务的交互步骤中保持条件、证据和当前目标一致，不重复索取已知条件。"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "原目标下GUI失败；既然你现在明确仅交CLI，可按CLI通过记录组织当前交付，把GUI失败作为延期项保留，而不是改写原验收历史。",
+      "rationale": "满足任务核心条件；实际运行时所有历史事实须添加本轮工具返回的来源引用。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "不管你现在怎么改目标，必须先修GUI，否则不允许交付CLI。",
+      "rationale": "违反事实底稿或核心约束；不能被流畅表达、正确格式抵消。"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "当前建议可以切换为CLI交付检查和记录GUI延期；范围变化不会让旧GUI失败结果消失。",
+      "rationale": "不同表达或查证路径同样有效，不要求逐字匹配参考答案。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "审查真实对话、工具记录和可点击引用；对照事实与反证判定。",
+      "expected": "第一轮按原CLI+GUI标准说明GUI尚需修复；用户随后缩减范围时不篡改历史验收。"
+    },
+    {
+      "mustId": "C2",
+      "method": "审查真实对话、工具记录和可点击引用；对照事实与反证判定。",
+      "expected": "根据用户当前“仅CLI、GUI延期”的新目标更新建议，区分原标准未过与当前范围可交付，不无必要坚持本轮必须修GUI。"
+    }
+  ]
+}

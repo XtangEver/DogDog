@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-03-06",
+  "system": "03",
+  "title": "文件变化后重新检索同时保留旧快照引用",
+  "split": "development",
+  "family": "03-cache-refresh",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["recovery", "correction"],
+  "track": "desktop",
+  "requirements": ["R03-06"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/03/DD-03-06",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。",
+      "仅复制library/到获准目录；updates/是准备素材，不可加入获准目录或提前发送。",
+      "仅inputFiles列出的JSONL可初始进入授权目录；其他JSONL先存放授权目录之外的deferred-fixtures，按steps再复制，不得提前被Agent检索。"
+    ],
+    "inputFiles": ["library/session-a.jsonl"]
+  },
+  "user": {
+    "goal": "松果订单导入现在有后续复测吗？请保留之前失败的证据。",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "松果订单导入现在有后续复测吗？请保留之前失败的证据。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "仅复制library/session-a.jsonl到授权目录，询问松果订单导入是否通过，并打开失败引用。",
+      "observe": "回答当前失败，记录旧来源ID/哈希。"
+    },
+    {
+      "action": "关闭DogDog，用updates/session-a-v2.jsonl覆盖临时授权目录的session-a.jsonl；重启发送initialMessage，必要时使用界面显式刷新。",
+      "observe": "新检索发现追加复测，引用新结果；原对话旧失败引用仍可回看。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "第一轮失败引用在文件更新后仍回看旧快照原文；不得静默改成新内容。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "重启后重新检索或显式刷新得到新快照，第二轮引用12条全部成功的后续结果。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "缓存始终返回旧失败且不说明刷新限制。",
+    "旧引用被新文件内容覆盖。"
+  ],
+  "grading": {
+    "oracle": "oracles/03/DD-03-06.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

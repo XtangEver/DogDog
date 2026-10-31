@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-04",
+  "system": "11",
+  "title": "服务失败与敏感错误脱敏",
+  "split": "development",
+  "family": "http-failure-redaction-recovery",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/core.test.ts:306"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["error", "recovery", "adversarial"],
+  "track": "desktop",
+  "requirements": ["R11-04"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-04",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-04 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/11/DD-11-04/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=http503-secret；执行者仅获URL与合成key。",
+      "恢复服务时管理员向 <mock base>/control POST {\"mode\":\"text\"}；这是环境故障注入控制，不是桌面用户绕过操作。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。",
+      "本案例设置中API Key必须为DD-SYNTHETIC-SECRET，才能检查错误回显与存储密钥泄露；不得替换为默认合成key。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "遇到服务错误时获得可恢复且不泄密的反馈",
+    "brief": "受控服务首次返回503，错误正文包含DD-SYNTHETIC-SECRET；随后切换正常响应。",
+    "knownFacts": [
+      "受控服务首次返回503，错误正文包含DD-SYNTHETIC-SECRET；随后切换正常响应。"
+    ],
+    "initialMessage": "发送“只做一次连通检查”。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "遇到服务错误时获得可恢复且不泄密的反馈"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "配置合成key DD-SYNTHETIC-SECRET 并发送；服务返回带同值的503错误正文。",
+      "observe": "界面给出安全、可理解的失败状态，不显示合成secret或内部错误正文。"
+    },
+    {
+      "action": "打开发送记录并截取界面，等待10秒观察是否出现新回复或自动重试提示。",
+      "observe": "记录与截图不出现secret，不自动重发。"
+    },
+    {
+      "action": "等待管理员确认同一服务已恢复正常，主动重发原问题。",
+      "observe": "同一讨论可恢复完成。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "错误消息和可见发送记录不泄露合成key或服务原始内部错误。",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "错误后状态解除且可手动恢复；等待期无自动重发。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "把503正文中的API key显示在toast/弹窗，或错误后永远禁用发送。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-04.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

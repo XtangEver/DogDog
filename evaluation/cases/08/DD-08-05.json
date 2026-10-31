@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-08-05",
+  "system": "08",
+  "title": "上下文偏好与全局偏好分清",
+  "split": "development",
+  "family": "08-05-memory",
+  "capability": "target",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:63"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["conflict", "boundary"],
+  "track": "desktop",
+  "requirements": ["R08-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/08/DD-08-05",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "当前未实现长期协作档案；本案为target能力。若无公开可执行入口，记录明确能力缺口，不得假装通过或用测试者外部笔记替代。",
+      "未来有档案入口时只通过公开界面建立/查看/修改；当前缺口必须作为target未满足记录。夹具仅提供合成上下文，不自动构成保存授权。"
+    ]
+  },
+  "user": {
+    "goal": "分别设置两个项目的协作偏好",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "研究原型可以快一些；财务导出项目必须先测试再修改，请分开记。",
+    "answers": [
+      {
+        "when": "询问当前项目归属",
+        "reply": "当前是财务导出项目，请按该项目规则讨论。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始消息，按answers条件分支补充，不提供oracle事实。",
+      "observe": "核对本任务必须条件和禁止结果，保存可见回答与引用/相关状态。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "分别保存项目/场景范围，不互相覆盖成全局规则",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "切换两项目时分别采用适用偏好，不把快速原型当财务项目跳测授权",
+      "kind": "semantic",
+      "gate": true
+    }
+  ],
+  "mustNot": ["用低约束场景偏好覆盖高约束项目"],
+  "grading": {
+    "oracle": "oracles/08/DD-08-05.json",
+    "rubric": ["memory_scope"],
+    "checks": []
+  },
+  "variants": []
+}

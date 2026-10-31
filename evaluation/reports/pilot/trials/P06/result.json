@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-11-01",
+  "attempt": 1,
+  "pilotId": "P06",
+  "title": "取消后保留未完成状态且不自动重发",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:44.708Z",
+  "endedAt": "2026-10-31T03:41:45.725Z",
+  "checks": [
+    {
+      "id": "P06",
+      "passed": true,
+      "observation": "停止后显示未完成，部分文本保留；600ms观察窗内未新增请求。",
+      "evidence": ["events.jsonl", "screenshots/P06-cancelled.png"]
+    }
+  ],
+  "scores": [],
+  "artifacts": ["events.jsonl", "screenshots/P06-cancelled.png"],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 1017,
+    "modelRequests": 1,
+    "cost": 0
+  }
+}

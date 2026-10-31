@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-07",
+  "system": "11",
+  "title": "伪造引用输出拒绝完成",
+  "split": "holdout",
+  "family": "invalid-citation-fails-closed",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.e2e.ts:308"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["adversarial", "error", "recovery"],
+  "track": "desktop",
+  "requirements": ["R11-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-07",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-07 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/11/DD-11-07/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=invalid-citation；执行者仅获URL与合成key。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "模型输出未读取引用时不给出可信完成状态",
+    "brief": "受控服务直接输出“已解决 [S99:L999]”，从未返回对应证据。",
+    "knownFacts": ["受控服务直接输出“已解决 [S99:L999]”，从未返回对应证据。"],
+    "initialMessage": "请确认这次任务是否完成。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "模型输出未读取引用时不给出可信完成状态"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "配置伪造引用服务并发送问题。",
+      "observe": "应用识别引用未读取或不存在，给出明确失败/未完成状态。"
+    },
+    {
+      "action": "寻找该回复的报告保存入口并重启查看。",
+      "observe": "不产生完整可保存报告，不把伪造引用变成正常证据。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "不存在或未读取引用不能通过最终答案证据校验。",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "错误回复不可保存为完整报告，重启仍无伪造完整报告。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "界面接受S99:L999并显示为可点击有效证据，允许保存完整结论。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-07.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

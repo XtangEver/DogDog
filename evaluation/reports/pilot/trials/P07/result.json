@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-10-01",
+  "attempt": 1,
+  "pilotId": "P07",
+  "title": "撤权阻止后续请求",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:45.726Z",
+  "endedAt": "2026-10-31T03:41:46.750Z",
+  "checks": [
+    {
+      "id": "P07",
+      "passed": true,
+      "observation": "撤销隔离profile发送许可后提交问题，出现错误提示；服务请求计数未增加。",
+      "evidence": ["events.jsonl", "screenshots/P07-revoked.png"]
+    }
+  ],
+  "scores": [],
+  "artifacts": ["events.jsonl", "screenshots/P07-revoked.png"],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 1024,
+    "modelRequests": 0,
+    "cost": 0
+  }
+}

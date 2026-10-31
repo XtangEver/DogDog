@@ -1,0 +1,7 @@
+{
+  "mode": "live",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "不使用脚本答案；真实测试模型自主完成任务。"
+}

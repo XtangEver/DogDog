@@ -1,0 +1,78 @@
+{
+  "id": "bbf03625-eaa1-4d31-8c63-a9db59cde931",
+  "createdAt": "2026-10-20T10:00:00Z",
+  "updatedAt": "2026-10-20T10:00:00Z",
+  "trace": {
+    "id": "synthetic-legacy-export",
+    "path": "REPLACE_WITH_ISOLATED_LEGACY_SOURCE_ABSOLUTE_PATH",
+    "hash": "f02d29e38b2c7ec6cc1b5c2432afbd25f572f288aaed3880ff414dc55329ec54",
+    "title": "导出功能验收",
+    "cwd": "D:\\synthetic-work",
+    "startedAt": "2026-10-20T10:00:00Z",
+    "events": [
+      {
+        "id": "L2",
+        "kind": "message",
+        "role": "user",
+        "text": "导出功能验收：要求全部测试通过。",
+        "line": 2,
+        "turn": 1
+      },
+      {
+        "id": "L3",
+        "kind": "tool_call",
+        "name": "exec_command",
+        "callId": "legacy-check",
+        "text": "npm test",
+        "line": 3,
+        "turn": 1
+      },
+      {
+        "id": "L4",
+        "kind": "tool_result",
+        "callId": "legacy-check",
+        "text": "1 test failed SYNTHETIC_EXPORT。",
+        "line": 4,
+        "turn": 1
+      }
+    ],
+    "turns": 1,
+    "warnings": [],
+    "stats": {
+      "turns": 1,
+      "toolCalls": 1
+    }
+  },
+  "task": {
+    "goal": "导出功能验收",
+    "criteria": "全部测试通过",
+    "complaint": "",
+    "fromTurn": 1,
+    "toTurn": 1
+  },
+  "analyzedEventIds": ["L2", "L3", "L4"],
+  "report": {
+    "summary": "测试失败，尚无通过依据。",
+    "strengths": [
+      {
+        "text": "执行了测试检查。",
+        "evidenceIds": ["L3"]
+      }
+    ],
+    "findings": [
+      {
+        "id": "legacy-f1",
+        "category": "协作方式",
+        "title": "缺少通过依据",
+        "certainty": "事实",
+        "explanation": "测试输出有一项失败。",
+        "evidenceIds": ["L4"],
+        "action": "修复后重新运行测试。",
+        "verification": "查看完整通过输出。",
+        "featureIds": []
+      }
+    ],
+    "nextPrompt": "请修复失败测试并给出验证结果。",
+    "limitations": ["只有一次合成测试记录。"]
+  }
+}

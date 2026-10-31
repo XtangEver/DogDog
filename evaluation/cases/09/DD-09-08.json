@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-09-08",
+  "system": "09",
+  "title": "发送预览与实际发送记录可理解",
+  "split": "holdout",
+  "family": "send-transparency-discoverability",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/renderer/ChatApp.tsx:738"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary", "normal"],
+  "track": "desktop",
+  "requirements": ["R09-08"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/09/DD-09-08",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-09-08 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。",
+      "irrelevant.jsonl故意也在授权目录，供不相关正文最小发送检查；不是未授权越界材料。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl", "irrelevant.jsonl"]
+  },
+  "user": {
+    "goal": "在发送前后理解哪些材料会发到什么服务",
+    "brief": "仅允许隔离合成材料；用户主动检查发送内容。",
+    "knownFacts": ["仅允许隔离合成材料；用户主动检查发送内容。"],
+    "initialMessage": "输入问题但先不发送，找到检查发送内容的入口。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "在发送前后理解哪些材料会发到什么服务"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "输入“启动问题怎么处理的”，主动打开发送预览。",
+      "observe": "显示当前服务和来源范围，说明这是首次请求预览，查阅不自动发送。"
+    },
+    {
+      "action": "关闭预览后Enter发送；完成后打开实际发送记录。",
+      "observe": "记录包含实际请求的模型、URL、字符数和正文；后续工具片段可查。"
+    },
+    {
+      "action": "搜索合成key标记和无关正文标记。",
+      "observe": "鉴权key不在正文，未检索的干扰正文不进入请求。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "预览为用户主动操作，能区分来源范围、首次请求与后续实际片段。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "实际发送记录可查且不含鉴权头/已存合成key；无关轨迹正文未发送。",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": [
+    "预览宣称包含全部未来请求，或实际发送记录暴露Authorization密钥。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/09/DD-09-08.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

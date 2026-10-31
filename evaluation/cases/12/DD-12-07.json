@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-12-07",
+  "system": "12",
+  "title": "大目录冷暖检索与增量变化性能",
+  "split": "holdout",
+  "family": "cold-warm-incremental-performance",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/core/trace-library.ts:119"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["performance", "recovery", "correction"],
+  "track": "desktop",
+  "requirements": ["R12-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/12/DD-12-07",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-12-07 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "准备后由管理员运行 node evaluation/fixtures/12/DD-12-07/generate.mjs <runDir>；此案例inputFiles为空，准备工具不预放种子，保证只有生成的1000条轨迹。目标session-0000.jsonl的mtime最旧，其他文件不含目标关键词。",
+      "增量阶段只由管理员把session-0000.jsonl中的“5秒”替换为“7秒，复测待完成”，记录修改前后hash及mtime；新查询必须读取新内容，旧引用保留原快照。",
+      "管理员增量修改必须在退出后以UTF-8读取session-0000.jsonl并替换字符串，保留行数，写回后记录新hash和mtime；不改仓库fixture。性能只形成实测基线，若没有预设历史预算，不凭相对耗时单独判失败。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。",
+      "时间线与请求数由独立记录器留存；执行者只记录屏幕反馈，不读取缓存或请求日志。冷缓存准备和目标增量写入均在应用退出后由管理员完成。"
+    ],
+    "inputFiles": []
+  },
+  "user": {
+    "goal": "了解首次扫描和缓存复用性能并防止陈旧结果",
+    "brief": "使用1000份合成轨迹、同一模型与同一机器；不设未经测量的统一秒数承诺。",
+    "knownFacts": [
+      "使用1000份合成轨迹、同一模型与同一机器；不设未经测量的统一秒数承诺。"
+    ],
+    "initialMessage": "检索“青石启动”的处理结果。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "了解首次扫描和缓存复用性能并防止陈旧结果"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动管理员已准备好1000份历史及空解析缓存的隔离实例，查询目标并记录可见反馈时间。",
+      "observe": "保存首可见状态、首证据与最终回答时间和请求数。"
+    },
+    {
+      "action": "在同一实例再查询两次并记录可见反馈时间；正常关闭应用，等待管理员确认增量更新准备完成。",
+      "observe": "暖查询数据完整，不把模型延迟混作解析时间。"
+    },
+    {
+      "action": "重启再次查询并点击新旧引文。",
+      "observe": "增量读取新内容，旧快照仍保留；没有扫描中UI永久冻结。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 600000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "输出冷/暖/增量各阶段可审计耗时、环境与完整结果，不以一次样本宣称性能提升。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "目标文件变化后新查询反映新内容，旧引用保持原快照，原始源文件仅管理员改动。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "只报一个“很快”或暖缓存仍回答旧5秒且声称已刷新。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/12/DD-12-07.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

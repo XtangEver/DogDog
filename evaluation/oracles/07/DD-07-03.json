@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-03",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "任务目标：本地CSV导出保留中文列名。",
+      "evidence": [
+        {
+          "file": "fixtures/07/DD-07-03/record.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "任务目标：本地CSV导出保留中文列名。"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "记录：中文列名导出检查通过。",
+      "evidence": [
+        {
+          "file": "fixtures/07/DD-07-03/record.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "记录：中文列名导出检查通过。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": ["本合成案例不能证明真实用户长期收益或真人主观体验。"],
+  "allowedConclusions": [
+    "旧复盘中的目标、验收和报告在切换与重启后均可回看，持续对话记录另行保留。",
+    "允许界面排版变化，但原复盘内容、证据和任务条件应完整可访问。"
+  ],
+  "forbiddenConclusions": [
+    "升级讨论界面后旧复盘列表消失，要求重新导入并重做。",
+    "以新建空复盘替代原记录恢复"
+  ],
+  "rubric": [
+    {
+      "dimension": "legacy_compatibility",
+      "zero": "旧数据不可访问或被覆盖",
+      "one": "内容存在但关键证据/条件缺失",
+      "two": "旧流程可用且切换重启后内容完整"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "旧复盘中的目标、验收和报告在切换与重启后均可回看，持续对话记录另行保留。",
+      "rationale": "满足本任务必须条件，且结论不超出可观察状态/合成证据。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "升级讨论界面后旧复盘列表消失，要求重新导入并重做。",
+      "rationale": "旧数据不可访问或被覆盖"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "允许界面排版变化，但原复盘内容、证据和任务条件应完整可访问。",
+      "rationale": "不同措辞或路径仍满足相同任务边界，不要求复制示范答案。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "外部电脑操作Agent通过公开界面执行并保存前后截图/时间线；仅成功提示不足为证。",
+      "expected": "从“旧版复盘”入口完成目标/验收/预览/诊断及保存流程"
+    },
+    {
+      "mustId": "C2",
+      "method": "外部电脑操作Agent通过公开界面执行并保存前后截图/时间线；仅成功提示不足为证。",
+      "expected": "返回持续对话并重启后旧复盘仍在原入口可打开，原始轨迹哈希不变"
+    }
+  ]
+}

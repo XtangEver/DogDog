@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-09-05",
+  "system": "09",
+  "title": "跨来源同号证据点击与返回",
+  "split": "development",
+  "family": "evidence-navigation-identity",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.e2e.ts:216"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary", "normal"],
+  "track": "desktop",
+  "requirements": ["R09-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/09/DD-09-05",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-09-05 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "确认两个相同行号的引文各自指向正确原文",
+    "brief": "两份合成文件第3行分别是修改和复测，引用显示来源ID与行号。",
+    "knownFacts": ["两份合成文件第3行分别是修改和复测，引用显示来源ID与行号。"],
+    "initialMessage": "分别给出处理与复测的证据。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "确认两个相同行号的引文各自指向正确原文"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送问题后定位回答中的两个来源引用，逐个点击。",
+      "observe": "弹窗显示来源、源行和原文，两个同号行不混淆。"
+    },
+    {
+      "action": "在每个弹窗阅读后关闭，再回到对话。",
+      "observe": "对话内容和用户输入保持，能重新打开另一引文。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "修改与复测的引用各自打开不同来源的正确第3行。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "阅读关闭后返回原讨论，不跳错会话或丢失输入。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "两个链接都打开同一份原文，或只显示来源名没有实际引用内容。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/09/DD-09-05.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

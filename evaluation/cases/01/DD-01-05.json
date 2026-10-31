@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-01-05",
+  "system": "01",
+  "title": "变更服务后的授权重置与恢复",
+  "split": "development",
+  "family": "service-change-consent",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.e2e.ts:430"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["normal", "boundary", "recovery"],
+  "track": "desktop",
+  "requirements": ["R01-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/01/DD-01-05",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-01-05 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/01/DD-01-05/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=text；执行者仅获URL与合成key。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "避免旧服务授权自动转移给新服务",
+    "brief": "服务A和B为不同回环地址，各自独立记录请求。",
+    "knownFacts": ["服务A和B为不同回环地址，各自独立记录请求。"],
+    "initialMessage": "先在服务A完成一次普通讨论。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "避免旧服务授权自动转移给新服务"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "在A配置并授权，发送“只回复A检查完成”；观察正常完成。",
+      "observe": "A完成回复。"
+    },
+    {
+      "action": "打开设置，将服务完整URL改为B，保持其他字段；观察发送权限并保存。",
+      "observe": "更换服务后发送勾选被清除或要求用户重新主动授权。"
+    },
+    {
+      "action": "不授权B就发送一条新消息，再主动勾选B权限并重发。",
+      "observe": "未授权时B请求数0；授权后才成功。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "服务变更后旧发送权限不继承给B，B未授权前无请求。",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "主动授权B后可继续，界面不会永久卡在旧服务。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "修改URL后仍隐式继承A的勾选并把旧对话发给B。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/01/DD-01-05.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-12-04",
+  "attempt": 1,
+  "pilotId": "P08",
+  "title": "实际启动身份与来源只读",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:46.751Z",
+  "endedAt": "2026-10-31T03:41:47.063Z",
+  "checks": [
+    {
+      "id": "P08",
+      "passed": true,
+      "observation": "启动身份来自Electron主进程的只读诊断，实际业务版本0.3.0；记录exe及bundle哈希，所有合成原轨迹哈希保持。未验证桌面快捷方式。",
+      "evidence": ["events.jsonl", "screenshots/P08-identity.png"]
+    }
+  ],
+  "scores": [],
+  "artifacts": ["events.jsonl", "screenshots/P08-identity.png"],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 312,
+    "modelRequests": 0,
+    "cost": 0
+  }
+}

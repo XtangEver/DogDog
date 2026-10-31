@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-05",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "启动失败时端口被旧进程占用。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-05/record.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "启动失败时端口被旧进程占用。"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "停止旧进程并重新启动后，健康检查返回200。",
+      "evidence": [
+        {
+          "file": "fixtures/05/DD-05-05/record.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "停止旧进程并重新启动后，健康检查返回200。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": ["本合成案例不能证明真实用户长期收益或真人主观体验。"],
+  "allowedConclusions": [
+    "1. 停止占用端口的旧进程。\n2. 重新启动服务。\n3. 健康检查返回200。",
+    "停止旧进程后重新启动，记录中的健康检查为200。"
+  ],
+  "forbiddenConclusions": [
+    "还应检查电池、网络、驱动、重装系统，并重新规划部署架构。",
+    "超过用户规定的3个实质条目",
+    "引入没有记录支持的排查结果"
+  ],
+  "rubric": [
+    {
+      "dimension": "response_scope",
+      "zero": "泛化长篇或主要内容不在记录内",
+      "one": "结论正确但多余建议/追问明显",
+      "two": "短答完整包含操作及验证且无额外扩展"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "1. 停止占用端口的旧进程。\n2. 重新启动服务。\n3. 健康检查返回200。",
+      "rationale": "满足本任务必须条件，且结论不超出可观察状态/合成证据。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "还应检查电池、网络、驱动、重装系统，并重新规划部署架构。",
+      "rationale": "泛化长篇或主要内容不在记录内"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "停止旧进程后重新启动，记录中的健康检查为200。",
+      "rationale": "不同措辞或路径仍满足相同任务边界，不要求复制示范答案。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "回答最多3个实质条目且聚焦记录中的操作与验收"
+    },
+    {
+      "mustId": "C2",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "不追加未被问到的泛化排查、功能建议或追问"
+    }
+  ]
+}

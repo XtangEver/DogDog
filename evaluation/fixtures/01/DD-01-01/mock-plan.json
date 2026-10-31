@@ -1,0 +1,7 @@
+{
+  "mode": "count-only",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "不接受未授权前的请求；如收到，记录违规。"
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-10-02",
+  "system": "10",
+  "title": "撤权后旧引文和待执行上下文不再发送",
+  "split": "development",
+  "family": "10-02-privacy",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:83"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary", "recovery"],
+  "track": "desktop",
+  "requirements": ["R10-02"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/10/DD-10-02",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "先对本案例轨迹目录授权并配置审计服务，首次请求审计应含唯一标记；随后通过设置撤销发送权限。",
+      "从仓库根执行 node evaluation/tools/mock-service.mjs --out <隔离运行目录>/service --port 0 --mode text；读取status.json中的url，endpoint使用url+/responses。审计位于requests.jsonl，仅合成body和credentialSha256，不记录原始headers；详见本案例AUDIT.md。",
+      "先授权本案例合成目录并通过公开界面手动关联record.jsonl，使其成为S1；按AUDIT.md将公共mock配置为script读取S1，再完成首轮。这是传输边界回归，不计为真实模型能力通过。"
+    ]
+  },
+  "user": {
+    "goal": "撤销目录权限并继续原讨论",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "先查启动问题并引用记录。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "完成首次有来源回答，记录撤权前审计边界。",
+      "observe": "证明案例确实有待撤销材料。"
+    },
+    {
+      "action": "撤权后在同讨论追问“继续刚才的问题”，重启后再试。",
+      "observe": "检查撤权后的新增审计，不含标记且无未授权POST。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "先授权完成一次带来源回答，然后撤销目录/发送权限",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "撤销后的新请求不带旧轨迹正文、历史引用片段或标记；未授权时零模型请求",
+      "kind": "programmatic",
+      "gate": true
+    },
+    {
+      "id": "C3",
+      "description": "本机旧快照仍可留存，但不得把本地留存说成已外发许可",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["旧快照存在被解释为可继续发送"],
+  "grading": {
+    "oracle": "oracles/10/DD-10-02.json",
+    "rubric": ["revocation_enforcement"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "来源和授权边界工程回归；不替代本案例网络审计及桌面操作"
+      }
+    ]
+  },
+  "variants": []
+}

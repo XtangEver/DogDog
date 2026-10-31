@@ -1,0 +1,7 @@
+{"type":"session_meta","payload":{"id":"synthetic-02-01","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"event_msg","payload":{"type":"task_started","turn_id":"first"},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"为库存页添加导出按钮。"}]},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"check-a","arguments":"{\"cmd\": \"npm test\"}"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"event_msg","payload":{"type":"item_completed","turn_id":"first","item":{"type":"function_call","name":"exec_command","call_id":"check-a","arguments":"{\"cmd\": \"npm test\"}"}},"timestamp":"2026-10-20T10:00:04Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"check-a","output":"库存导出测试：2 passed, 1 failed"},"timestamp":"2026-10-20T10:00:05Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"按钮已提交，导出测试仍有一项失败。"}]},"timestamp":"2026-10-20T10:00:06Z"}

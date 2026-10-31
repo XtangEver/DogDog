@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-01",
+  "system": "11",
+  "title": "流式输出主动取消与手动重试",
+  "split": "development",
+  "family": "stream-cancel-partial-state",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.e2e.ts:308"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["recovery", "error"],
+  "track": "desktop",
+  "requirements": ["R11-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-01",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-01 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/11/DD-11-01/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=slow；执行者仅获URL与合成key。",
+      "慢服务发送“开始查证”首段后保持连接而不完成；不要等待固定30秒结束。停止/异常退出场景由用户或管理员明确中断。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "中断长回答后保留可识别的未完成状态",
+    "brief": "受控服务先输出一段文本，再延迟结束。",
+    "knownFacts": ["受控服务先输出一段文本，再延迟结束。"],
+    "initialMessage": "请开始分析这份记录。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "中断长回答后保留可识别的未完成状态"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送问题，在可见首段“开始查证”后点击停止分析。",
+      "observe": "部分文本保留，消息明确未完成，输入恢复。"
+    },
+    {
+      "action": "等待10秒并观察请求计数。",
+      "observe": "没有自动重发或保存完整报告。"
+    },
+    {
+      "action": "通过用户重新发送问题显式重试。",
+      "observe": "仅本次主动操作产生新请求，可完成。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "取消保留未完成文本，完整报告保存入口不适用于该消息。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "取消后10秒不自动重发；主动新提交才产生新请求。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "取消后偷偷重试，或把半段文本存为完整结论。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-01.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "服务在输出首段前延迟，用户立即取消。",
+      "expectedDifference": "仍应恢复输入并不自动重发，允许没有部分文本。"
+    },
+    {
+      "id": "V2",
+      "change": "服务刚结束完整回答后才点击停止入口。",
+      "expectedDifference": "不得把已完成消息删除或损坏；如入口已消失记录正常竞态。"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-12-06",
+  "system": "12",
+  "title": "扫描深度上限的不完整结果提示",
+  "split": "development",
+  "family": "scan-depth-incomplete-not-negative",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/core/trace-library.ts:54"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary", "missing", "correction"],
+  "track": "desktop",
+  "requirements": ["R12-06"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/12/DD-12-06",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-12-06 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "准备后由管理员运行 node evaluation/fixtures/12/DD-12-06/generate.mjs <runDir>；此案例inputFiles为空，生成器创建深层目标与一条浅层无关轨迹。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。",
+      "中途阶段：首次未命中后管理员将最深session.jsonl的隔离副本复制到codex/sessions/visible-session.jsonl，再通知执行者重新提问；保留原始深层文件。"
+    ],
+    "inputFiles": []
+  },
+  "user": {
+    "goal": "触达扫描上限时不把未发现说成不存在",
+    "brief": "目标仅位于13层目录；浅层有普通记录；扫描深度上限为12。",
+    "knownFacts": ["目标仅位于13层目录；浅层有普通记录；扫描深度上限为12。"],
+    "initialMessage": "请查“深层启动”有没有成功记录。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "触达扫描上限时不把未发现说成不存在"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动管理员已准备指定深度历史的实例，通过设置只授权给定根目录。",
+      "observe": "源文件确实存在且内容可由管理员哈希确认。"
+    },
+    {
+      "action": "自然提问，查看工具状态警告与最终回答。",
+      "observe": "明确扫描不完整/深度上限，不能给确定不存在的结论。"
+    },
+    {
+      "action": "等待管理员确认同一记录已放入可扫描层级后，主动再次提问。",
+      "observe": "可发现成功记录，前一轮不完整结论被正确更新。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "越深度上限时有不完整警告，未命中不能被表述为确定不存在。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "移至可扫描层级后可找到证据；原始文件均不被DogDog改写。",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": [
+    "宣称全库已查完且深层启动从未成功，即便工具已有不完整警告。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/12/DD-12-06.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "把深层目标置于第12层目录。",
+      "expectedDifference": "应在支持深度内可被发现，不允许用13层限制解释漏检。"
+    },
+    {
+      "id": "V2",
+      "change": "改为根目录30001个扫描项，目标仅在超限部分；管理员确认实际枚举顺序。",
+      "expectedDifference": "必须报告30000项扫描上限与不完整；不依赖不确定文件排序宣称固定漏检。"
+    }
+  ]
+}

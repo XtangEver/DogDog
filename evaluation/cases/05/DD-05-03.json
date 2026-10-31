@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-03",
+  "system": "05",
+  "title": "用户修正目标后更新分析",
+  "split": "development",
+  "family": "05-03-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["correction"],
+  "track": "desktop",
+  "requirements": ["R05-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-03",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "按我更正后的范围复盘CSV导出",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "请复盘这份CSV导出任务。",
+    "answers": [
+      {
+        "when": "第一轮回答完成后",
+        "reply": "纠正一下：我只需要本地CSV，不需要在线共享；按这个范围重新判断。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始问题，随后主动发送更正。",
+      "observe": "观察后续分析是否实质使用更正，而非仅口头认同。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "用户说明仅需本地导出后，撤回或避免在线共享方面的缺陷判断",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "后续回答明确使用更正后的本地CSV目标",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["将用户明确排除的共享功能列为必须修复项"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-03.json",
+    "rubric": ["correction_use"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

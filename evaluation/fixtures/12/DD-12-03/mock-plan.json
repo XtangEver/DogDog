@@ -1,0 +1,7 @@
+{
+  "mode": "anthropic-only",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "无论请求体均按Anthropic协议返回正常流，不自动适配错误协议。"
+}

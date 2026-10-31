@@ -1,0 +1,5 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-04-a","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"成功上线提醒：准备修复发票页白屏。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"标题是用户预期，不是验收结果。"}]},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"invoice","arguments":"{\"cmd\": \"invoice-smoke\"}"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"invoice","output":"发票页冒烟FAIL：登录后白屏仍出现"},"timestamp":"2026-10-20T10:00:04Z"}

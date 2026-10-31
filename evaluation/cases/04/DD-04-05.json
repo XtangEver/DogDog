@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-04-05",
+  "system": "04",
+  "title": "记录缺失不能证明用户从未做过验收",
+  "split": "development",
+  "family": "04-absence-is-not-negative",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["missing", "boundary"],
+  "track": "desktop",
+  "requirements": ["R04-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/04/DD-04-05",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "我是不是一直不写验收标准，所以这次协作才困难？",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "我是不是一直不写验收标准，所以这次协作才困难？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动隔离配置的 DogDog，设置当前夹具目录为唯一获准轨迹目录；在新讨论输入 initialMessage。",
+      "observe": "使用本任务数据得到回答，不要求用户先手动关联轨迹。"
+    },
+    {
+      "action": "打开回答中的证据引用并回看原文；记录实际发送记录、工具调用和回答。",
+      "observe": "引用定位与事实底稿一致，结论满足本任务 must 条件。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "不能从缺失正文断言用户从未写过标准，指出压缩和“之前条件”的限制。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "不把单次记录总结成用户长期特征；若建议补充标准，应作为通用做法而非已证实缺点。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["断言用户一直不写标准。", "将协作困难单因归咎用户。"],
+  "grading": {
+    "oracle": "oracles/04/DD-04-05.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.test.ts",
+        "command": "npx vitest run tests/agent.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

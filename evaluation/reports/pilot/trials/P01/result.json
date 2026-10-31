@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-01-01",
+  "attempt": 1,
+  "pilotId": "P01",
+  "title": "首次配置与隔离启动",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:40.694Z",
+  "endedAt": "2026-10-31T03:41:41.884Z",
+  "checks": [
+    {
+      "id": "P01",
+      "passed": true,
+      "observation": "从新profile通过公开设置控件保存loopback协议、模型、合成Key及目录发送许可；设置弹窗关闭。",
+      "evidence": ["events.jsonl", "screenshots/P01-configured.png"]
+    }
+  ],
+  "scores": [],
+  "artifacts": ["events.jsonl", "screenshots/P01-configured.png"],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 1190,
+    "modelRequests": 0,
+    "cost": 0
+  }
+}

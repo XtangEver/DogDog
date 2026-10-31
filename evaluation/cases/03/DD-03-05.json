@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-03-05",
+  "system": "03",
+  "title": "超过界面150条仍能检索库内深处目标",
+  "split": "development",
+  "family": "03-library-over-ui-limit",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary", "performance"],
+  "track": "desktop",
+  "requirements": ["R03-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/03/DD-03-05",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "帮我找ALERT-731重复通知的处理记录，界面最近列表里我没看到。",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "帮我找ALERT-731重复通知的处理记录，界面最近列表里我没看到。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动隔离配置的 DogDog，设置当前夹具目录为唯一获准轨迹目录；在新讨论输入 initialMessage。",
+      "observe": "使用本任务数据得到回答，不要求用户先手动关联轨迹。"
+    },
+    {
+      "action": "打开回答中的证据引用并回看原文；记录实际发送记录、工具调用和回答。",
+      "observe": "引用定位与事实底稿一致，结论满足本任务 must 条件。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "在151份库内定位唯一ALERT-731记录，不能受UI最近150条限制。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "说明幂等键措施，区分助手报告检查通过与独立工具结果缺失。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "以最近列表没有为由宣称全库没有。",
+    "要求用户删除或挪走前150份记录。"
+  ],
+  "grading": {
+    "oracle": "oracles/03/DD-03-05.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

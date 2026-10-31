@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-06-04",
+  "system": "06",
+  "title": "建议必须适配离线小团队和时间预算",
+  "split": "development",
+  "family": "06-constraint-aware-advice",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "boundary"],
+  "track": "desktop",
+  "requirements": ["R06-04"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/06/DD-06-04",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "基于这次内网交付，给我不超过三条、半小时内能开始用的协作改进，附验收办法。",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "基于这次内网交付，给我不超过三条、半小时内能开始用的协作改进，附验收办法。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动隔离配置的 DogDog，设置当前夹具目录为唯一获准轨迹目录；在新讨论输入 initialMessage。",
+      "observe": "使用本任务数据得到回答，不要求用户先手动关联轨迹。"
+    },
+    {
+      "action": "打开回答中的证据引用并回看原文；记录实际发送记录、工具调用和回答。",
+      "observe": "引用定位与事实底稿一致，结论满足本任务 must 条件。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "最多三条建议，优先当前缺列提示问题，符合本地、半小时可开始和无新增服务约束。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "每条带可执行动作及可观察验收，例如缺列文件给出具体列名并重跑既有三项检查。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "建议上传私有代码到云服务。",
+    "把向量库、复杂平台或数周流程作为本轮必须动作。",
+    "没有验收办法的抽象口号。"
+  ],
+  "grading": {
+    "oracle": "oracles/06/DD-06-04.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.test.ts",
+        "command": "npx vitest run tests/agent.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

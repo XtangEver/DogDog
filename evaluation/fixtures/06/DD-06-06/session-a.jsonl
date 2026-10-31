@@ -1,0 +1,5 @@
+{"type":"session_meta","payload":{"id":"synthetic-06-06","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"首版验收CLI与GUI都能导出日报。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"daily","arguments":"{\"cmd\": \"npm test\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"daily","output":"CLI导出PASS；GUI导出FAIL：按钮无响应"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"CLI可用，但按原验收整体验收未通过。"}]},"timestamp":"2026-10-20T10:00:03Z"}

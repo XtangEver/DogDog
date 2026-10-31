@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-07",
+  "system": "07",
+  "title": "负面结果与无效建议保留",
+  "split": "holdout",
+  "family": "07-07-report",
+  "capability": "target",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:62"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["error", "correction"],
+  "track": "desktop",
+  "requirements": ["R07-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/07/DD-07-07",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "当前没有长期建议效果台账及负面结果累积；本案要求未来闭环能保留失败观察。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "更新采用建议后的结果",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "我试了你建议的方法，但这次还是返工了，请更新判断。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始消息，按answers条件分支补充，不提供oracle事实。",
+      "observe": "核对本任务必须条件和禁止结果，保存可见回答与引用/相关状态。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "保留本次未达预期的结果，不删去或改写负面证据",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "区分建议执行、结果不理想及可能的外部变化，避免将责任无据推给用户",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["删除不利试验或强行改标成功", "无据归责用户"],
+  "grading": {
+    "oracle": "oracles/07/DD-07-07.json",
+    "rubric": ["negative_outcome"],
+    "checks": []
+  },
+  "variants": []
+}

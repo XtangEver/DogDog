@@ -1,0 +1,7 @@
+{
+  "mode": "ask-user",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "首次工具调用ask_user询问“验收目标是什么”；收到用户补充后输出基于该目标的简短回答。"
+}

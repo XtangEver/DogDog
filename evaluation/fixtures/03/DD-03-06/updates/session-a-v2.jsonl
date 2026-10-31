@@ -1,0 +1,7 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-06-a","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"校验松果订单导入。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"import","arguments":"{\"cmd\": \"import-check\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"import","output":"松果订单导入FAIL：日期格式不支持"},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"增加ISO日期支持后重新验收。"}]},"timestamp":"2026-10-20T10:00:04Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"import-retest","arguments":"{\"cmd\": \"import-check --iso\"}"},"timestamp":"2026-10-20T10:00:05Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"import-retest","output":"松果订单导入ISO日期复测PASS：12条全部成功"},"timestamp":"2026-10-20T10:00:06Z"}

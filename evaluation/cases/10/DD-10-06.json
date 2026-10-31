@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-10-06",
+  "system": "10",
+  "title": "服务回显密钥时错误信息脱敏",
+  "split": "development",
+  "family": "10-06-privacy",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:83"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["error", "adversarial"],
+  "track": "desktop",
+  "requirements": ["R10-06"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/10/DD-10-06",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "从仓库根执行 node evaluation/tools/mock-service.mjs --out <隔离运行目录>/service --port 0 --mode http401；读取status.json中的url，endpoint使用url+/responses。审计位于requests.jsonl，仅合成body和credentialSha256，不记录原始headers；详见本案例AUDIT.md。",
+      "配置合成key MOCK-NEVER-REAL并授权合成目录；http401模式会在错误正文回显该值，用于脱敏检测；不使用任何真实key。"
+    ]
+  },
+  "user": {
+    "goal": "观察受控服务鉴权失败后的错误展示",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "发送一条普通咨询，观察受控服务故意返回的鉴权错误。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送一条通用咨询并等待错误。",
+      "observe": "截取可见错误提示，搜索其中是否含完整合成值。"
+    },
+    {
+      "action": "重启回看错误消息及隔离用户数据中普通对话/错误日志。",
+      "observe": "不得出现完整合成key；加密凭据存储和仅准备者保留的审计文件不算普通日志。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "主进程只在请求鉴权处使用合成key，错误显示不得原样包含它",
+      "kind": "programmatic",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "界面、对话保存和普通错误日志可见内容均不泄漏完整合成key",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": ["把远端错误响应当可信内容直接展示密钥"],
+  "grading": {
+    "oracle": "oracles/10/DD-10-06.json",
+    "rubric": ["error_secret_redaction"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "来源和授权边界工程回归；不替代本案例网络审计及桌面操作"
+      }
+    ]
+  },
+  "variants": []
+}

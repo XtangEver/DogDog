@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-05",
+  "system": "11",
+  "title": "解析缓存损坏自动重建不伤原文",
+  "split": "development",
+  "family": "damaged-cache-rebuild",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/core/trace-library.ts:119"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["error", "recovery"],
+  "track": "desktop",
+  "requirements": ["R11-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-05",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-05 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "缓存破坏由管理员在应用退出后进行，仅写runDir/profile/trace-index中除manifest.json以外的已有*.json为{；先保存缓存与源文件哈希。不改原始jsonl。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "缓存损坏后仍从只读轨迹得到正确结果",
+    "brief": "先完成一次合成历史查询；管理员只破坏隔离trace-index中的缓存文件。",
+    "knownFacts": [
+      "先完成一次合成历史查询；管理员只破坏隔离trace-index中的缓存文件。"
+    ],
+    "initialMessage": "查一下启动等待修改与复测。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "缓存损坏后仍从只读轨迹得到正确结果"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "完成第一次查证并打开两个引用，截图保存可见内容。",
+      "observe": "得到修改与复测证据。"
+    },
+    {
+      "action": "正常关闭应用，等待管理员确认缓存故障准备完毕；重新启动同一隔离实例。",
+      "observe": "应用可启动，不要求删除原始轨迹。"
+    },
+    {
+      "action": "重复问题并点击旧引用、新引用。",
+      "observe": "缓存重建，新旧证据均有效，源文件哈希不变。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "损坏缓存不导致永久不可用，重建后结果及引文与原始轨迹一致。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "原始轨迹哈希保持，新旧快照引用不被覆盖。",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": [
+    "建议删除原始历史或悄悄改写源轨迹修复缓存。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-05.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

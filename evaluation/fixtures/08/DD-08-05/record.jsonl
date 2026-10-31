@@ -1,0 +1,3 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-08-05-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "研究原型项目允许先做小实验快速验证。"}]}, "timestamp": "2026-10-20T10:01:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "财务导出项目要求修改前先补测试并复核结果。"}]}, "timestamp": "2026-10-20T10:02:00Z"}

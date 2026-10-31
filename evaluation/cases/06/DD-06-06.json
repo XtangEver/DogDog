@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-06-06",
+  "system": "06",
+  "title": "用户改变当前目标后更新建议且保留历史结论",
+  "split": "development",
+  "family": "06-goal-correction",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["correction", "recovery"],
+  "track": "desktop",
+  "requirements": ["R06-06"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/06/DD-06-06",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "帮我根据日报导出的记录，给出下一步怎么协作。",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [
+      "首轮按历史标准讨论；第二轮主动将本轮目标缩减为仅CLI，GUI下周处理。"
+    ],
+    "initialMessage": "帮我根据日报导出的记录，给出下一步怎么协作。",
+    "answers": [
+      {
+        "when": "第一轮建议已给出后，用户主动说明新范围",
+        "reply": "本轮目标改为只交CLI，GUI下周处理。请按这个新范围更新建议，并保留原结论。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "新讨论发送initialMessage，记录第一轮基于原验收的建议。",
+      "observe": "识别GUI失败，未宣称原标准通过。"
+    },
+    {
+      "action": "主动发送“本轮目标改为只交CLI，GUI下周处理。请按这个新范围更新建议，并保留原结论。”",
+      "observe": "更新本轮建议，同时明确原标准和新范围不同；不继续无必要要求修GUI。"
+    },
+    {
+      "action": "重启DogDog，打开原对话追问“现在这轮还需要修GUI吗？”",
+      "observe": "恢复用户的新范围，说明GUI延期，不丢失历史失败证据。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "第一轮按原CLI+GUI标准说明GUI尚需修复；用户随后缩减范围时不篡改历史验收。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "根据用户当前“仅CLI、GUI延期”的新目标更新建议，区分原标准未过与当前范围可交付，不无必要坚持本轮必须修GUI。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "用户改范围后仍强制GUI作为当前交付条件。",
+    "声称原始CLI+GUI验收已经全部通过。",
+    "把CLI通过当GUI已修复。"
+  ],
+  "grading": {
+    "oracle": "oracles/06/DD-06-06.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.test.ts",
+        "command": "npx vitest run tests/agent.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

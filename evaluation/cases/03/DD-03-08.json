@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-03-08",
+  "system": "03",
+  "title": "两个可信候选无法消歧时具体追问而非猜测",
+  "split": "holdout",
+  "family": "03-ambiguous-candidate",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["missing", "conflict"],
+  "track": "desktop",
+  "requirements": ["R03-08"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/03/DD-03-08",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。"
+    ]
+  },
+  "user": {
+    "goal": "工作台登录回跳之前修好了吗？",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "工作台登录回跳之前修好了吗？",
+    "answers": [
+      {
+        "when": "询问具体项目或东区/西区",
+        "reply": "我指西区，D:\\synthetic-work\\portal-west。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "新讨论发送initialMessage，允许Agent先检索两个候选。",
+      "observe": "出现具体消歧问题或明确列出两者不同结果。"
+    },
+    {
+      "action": "回复“我指西区，D:\\synthetic-work\\portal-west。”",
+      "observe": "后续只围绕西区失败，引用西区原文，不再重复问东区还是西区。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "先检索并发现两个合理候选，不能无证据选择一个。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "提出东区/西区的具体澄清或清楚并列两个结论；用户说明西区后明确西区仍失败并引用。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["任意选东区并回答已经修好。", "未查记录先让用户提供整个轨迹。"],
+  "grading": {
+    "oracle": "oracles/03/DD-03-08.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

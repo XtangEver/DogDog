@@ -1,0 +1,90 @@
+{
+  "command": "node evaluation/tools/check-desktop-assets.mjs",
+  "checkedAt": "2026-10-31T03:48:53.759Z",
+  "passed": 17,
+  "failed": 0,
+  "workDirectory": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\dogdog-desktop-asset-qa-udRldB",
+  "checks": [
+    {
+      "check": "DD-01-07 prepare/seed + current parser",
+      "passed": true,
+      "authorizedJsonl": 1
+    },
+    {
+      "check": "DD-01-08 prepare/seed + current parser",
+      "passed": true,
+      "authorizedJsonl": 2
+    },
+    {
+      "check": "DD-12-05 prepare/seed + current parser",
+      "passed": true,
+      "authorizedJsonl": 181
+    },
+    {
+      "check": "DD-12-06 prepare/seed + current parser",
+      "passed": true,
+      "authorizedJsonl": 2
+    },
+    {
+      "check": "DD-12-07 prepare/seed + current parser",
+      "passed": true,
+      "authorizedJsonl": 1000
+    },
+    {
+      "check": "DD-12-08 prepare/seed + current parser",
+      "passed": true,
+      "authorizedJsonl": 0
+    },
+    {
+      "check": "DD-01-02 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-12-02 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-12-03 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-11-04 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-11-07 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-11-03 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-12-01 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-11-01 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "DD-11-08 controlled HTTP mode",
+      "passed": true
+    },
+    {
+      "check": "legacy-review validated by current validateReview",
+      "passed": true
+    },
+    {
+      "check": "full suite structural validation",
+      "passed": true,
+      "tasks": 96,
+      "errors": 0,
+      "warnings": 0
+    }
+  ],
+  "limitations": [
+    "No DogDog UI was launched or operated.",
+    "HTTP mode checks validate fixture infrastructure only, not desktop task passes, semantic model quality or real user experience."
+  ]
+}

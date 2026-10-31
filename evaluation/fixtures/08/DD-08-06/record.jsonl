@@ -1,0 +1,3 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-08-06-record.jsonl", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "任务中用户修改了两次输出格式。"}]}, "timestamp": "2026-10-20T10:01:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "记录未说明修改原因，也无其他任务表现。"}]}, "timestamp": "2026-10-20T10:02:00Z"}

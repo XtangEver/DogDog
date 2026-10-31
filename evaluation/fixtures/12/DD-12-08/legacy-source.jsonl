@@ -1,0 +1,4 @@
+{"type": "session_meta", "timestamp": "2026-10-20T10:00:00Z", "payload": {"id": "synthetic-legacy-export", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "导出功能验收：要求全部测试通过。"}]}}
+{"type": "response_item", "payload": {"type": "function_call", "name": "exec_command", "call_id": "legacy-check", "arguments": "npm test"}}
+{"type": "response_item", "payload": {"type": "function_call_output", "call_id": "legacy-check", "output": "1 test failed SYNTHETIC_EXPORT。"}}

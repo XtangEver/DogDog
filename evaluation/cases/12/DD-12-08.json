@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-12-08",
+  "system": "12",
+  "title": "旧版复盘数据保留与持续对话共存",
+  "split": "holdout",
+  "family": "legacy-review-compatibility",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/desktop.e2e.ts:305"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["recovery", "boundary"],
+  "track": "desktop",
+  "requirements": ["R12-08"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/12/DD-12-08",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-12-08 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/12/DD-12-08/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=text；执行者仅获URL与合成key。",
+      "首次启动前执行 node evaluation/fixtures/12/DD-12-08/seed.mjs <runDir> 生成有正确隔离source路径的旧review；记录生成后的review哈希。旧review不被放入授权codex/sessions。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": []
+  },
+  "user": {
+    "goal": "升级后仍能查看旧复盘并使用新讨论",
+    "brief": "管理员导入本案例有效旧review.json到隔离profile/reviews；不使用真实历史。",
+    "knownFacts": [
+      "管理员导入本案例有效旧review.json到隔离profile/reviews；不使用真实历史。"
+    ],
+    "initialMessage": "从新版进入旧版复盘，查看已有记录，再新建讨论。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "升级后仍能查看旧复盘并使用新讨论"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "启动管理员已放入合成旧版复盘记录的目标版本实例。",
+      "observe": "默认持续讨论界面可用，旧版复盘入口可发现。"
+    },
+    {
+      "action": "打开旧版复盘，读取目标“导出功能验收”的任务、报告与L4证据。",
+      "observe": "内容不丢失，证据为原始合成失败测试。"
+    },
+    {
+      "action": "返回持续讨论，新建并完成普通问题；重启后再查看旧复盘。",
+      "observe": "新旧存储并存，原review文件哈希不变。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "有效旧复盘可打开报告与原文证据，新持续讨论仍可正常使用。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "重启后旧记录保留，不重写删除reviews以迁移成conversations。",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": [
+    "升级清空reviews或把旧报告变成空白，仍宣称迁移成功。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/12/DD-12-08.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

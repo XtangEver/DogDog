@@ -1,0 +1,17 @@
+{"index":1,"at":"2026-10-31T03:41:40.687Z","action":"launch","executable":"D:\\work_record\\DogDog\\node_modules\\electron\\dist\\electron.exe","profile":"D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\profile","traceRoot":"D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex"}
+{"index":2,"at":"2026-10-31T03:41:41.883Z","action":"pilot_check","pilotId":"P01","passed":true,"observation":"从新profile通过公开设置控件保存loopback协议、模型、合成Key及目录发送许可；设置弹窗关闭。"}
+{"index":3,"at":"2026-10-31T03:41:41.890Z","action":"user_input","text":"上次启动失败后来解决了吗？请查证并简短回答。"}
+{"index":4,"at":"2026-10-31T03:41:42.351Z","action":"pilot_check","pilotId":"P02","passed":true,"observation":"未手动关联来源，固定mock工具循环经过discover/search/read后显示双来源引用，干扰正文未进入请求。"}
+{"index":5,"at":"2026-10-31T03:41:43.256Z","action":"source_mapping","texts":["轨迹证据 · S1:L4\n×\n\n复测启动修复\n\nD:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex\\archived_sessions\\b.jsonl\n原文第 4 行 · 轮次 1\n\nSHA-256 84de8d5c10586f74557932d4eda9a39516720401b290f0b0aeba18dea5322620\n启动复测通过：修改后启动检查与重启检查均通过。","轨迹证据 · S2:L4\n×\n\n修复启动失败\n\nD:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex\\sessions\\a.jsonl\n原文第 4 行 · 轮次 1\n\nSHA-256 c546cb10e5da575acc94005006d4bda2b34b5464d211af8dcbeadd695ea2c2c5\n启动配置已修改；首次测试尚未进行。"]}
+{"index":6,"at":"2026-10-31T03:41:43.257Z","action":"pilot_check","pilotId":"P03","passed":true,"observation":"逐一打开两份引用，原文分别包含配置修改和复测，均有SHA-256；不假设S1/S2排序。"}
+{"index":7,"at":"2026-10-31T03:41:43.878Z","action":"launch","executable":"D:\\work_record\\DogDog\\node_modules\\electron\\dist\\electron.exe","profile":"D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\profile","traceRoot":"D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex"}
+{"index":8,"at":"2026-10-31T03:41:44.206Z","action":"pilot_check","pilotId":"P05","passed":true,"observation":"通过UI保存报告并关闭/重启隔离实例；报告入口与原引用恢复。"}
+{"index":9,"at":"2026-10-31T03:41:44.260Z","action":"user_input","text":"改进这次验收方式，需要我补充什么？"}
+{"index":10,"at":"2026-10-31T03:41:44.416Z","action":"user_input","text":"修正：不是只看测试绿灯，还必须检查实际产物可打开。"}
+{"index":11,"at":"2026-10-31T03:41:44.707Z","action":"pilot_check","pilotId":"P04","passed":true,"observation":"ask_user暂停后接受合成补充，下一轮继续显示验收条件；只验证追问状态与续写传输，不证明真实模型理解纠正。"}
+{"index":12,"at":"2026-10-31T03:41:44.708Z","action":"user_input","text":"请继续分析。"}
+{"index":13,"at":"2026-10-31T03:41:45.725Z","action":"pilot_check","pilotId":"P06","passed":true,"observation":"停止后显示未完成，部分文本保留；600ms观察窗内未新增请求。"}
+{"index":14,"at":"2026-10-31T03:41:45.947Z","action":"user_input","text":"继续检索启动记录。"}
+{"index":15,"at":"2026-10-31T03:41:46.749Z","action":"pilot_check","pilotId":"P07","passed":true,"observation":"撤销隔离profile发送许可后提交问题，出现错误提示；服务请求计数未增加。"}
+{"index":16,"at":"2026-10-31T03:41:47.062Z","action":"pilot_check","pilotId":"P08","passed":true,"observation":"启动身份来自Electron主进程的只读诊断，实际业务版本0.3.0；记录exe及bundle哈希，所有合成原轨迹哈希保持。未验证桌面快捷方式。"}
+{"index":17,"at":"2026-10-31T03:41:47.065Z","action":"deliberate_grader_failure","detected":true,"classification":"grading_dispute"}

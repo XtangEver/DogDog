@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-01-01",
+  "system": "01",
+  "title": "空白安装首次进入与能力边界",
+  "split": "development",
+  "family": "fresh-onboarding",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/renderer/ChatApp.tsx:355"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["normal", "missing"],
+  "track": "desktop",
+  "requirements": ["R01-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/01/DD-01-01",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-01-01 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/01/DD-01-01/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=count-only；执行者仅获URL与合成key。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "从零启动并判断如何开始一次咨询",
+    "brief": "没有配置模型，也没有授权任何历史目录。",
+    "knownFacts": ["没有配置模型，也没有授权任何历史目录。"],
+    "initialMessage": "启动 DogDog，询问“怎样把需求和验收标准说清楚？”",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "从零启动并判断如何开始一次咨询"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "打开指定隔离版 DogDog，观察欢迎界面；在输入框输入问题并按 Enter。",
+      "observe": "欢迎内容和模型设置入口可发现；未配置时给出可操作的配置引导。"
+    },
+    {
+      "action": "不保存服务配置，关闭设置，再打开新建讨论。",
+      "observe": "能够返回对话；未向任意服务发送问题或轨迹。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "首次提问被清楚引导至模型配置，关闭后原问题不无故丢失。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "未配置阶段服务请求计数为0，未授权历史目录未被发送。",
+      "kind": "desktop",
+      "gate": true
+    }
+  ],
+  "mustNot": [
+    "界面直接宣称已分析本机全部历史，或没有任何引导只永久显示正在思考。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/01/DD-01-01.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

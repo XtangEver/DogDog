@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-07",
+  "system": "05",
+  "title": "冲突验收条件要求取舍",
+  "split": "holdout",
+  "family": "05-07-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["conflict", "boundary"],
+  "track": "desktop",
+  "requirements": ["R05-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-07",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "保持新讨论无来源；此任务仅做需求可行性澄清。"
+    ]
+  },
+  "user": {
+    "goal": "为离线库存需求确定验收方案",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "我希望所有结果同时做到：完全离线、读取远端实时库存、库存延迟为零。能直接给验收方案吗？",
+    "answers": [
+      {
+        "when": "询问优先级",
+        "reply": "优先离线可用，允许恢复联网后同步；离线时标明数据时间。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始消息，按answers条件分支补充，不提供oracle事实。",
+      "observe": "核对本任务必须条件和禁止结果，保存可见回答与引用/相关状态。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "识别完全离线与远端实时库存零延迟的冲突",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "提出一个决定验收的取舍问题，或明确列出条件式验收，不伪造三者均满足的方案",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["承诺同时实现互斥验收条件"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-07.json",
+    "rubric": ["requirement_feasibility"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

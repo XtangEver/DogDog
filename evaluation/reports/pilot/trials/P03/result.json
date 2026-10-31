@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-04-01",
+  "attempt": 1,
+  "pilotId": "P03",
+  "title": "多来源原文与快照哈希回看",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:42.353Z",
+  "endedAt": "2026-10-31T03:41:43.258Z",
+  "checks": [
+    {
+      "id": "P03",
+      "passed": true,
+      "observation": "逐一打开两份引用，原文分别包含配置修改和复测，均有SHA-256；不假设S1/S2排序。",
+      "evidence": [
+        "events.jsonl",
+        "screenshots/P03-evidence-S1.png",
+        "screenshots/P03-evidence-S2.png"
+      ]
+    }
+  ],
+  "scores": [],
+  "artifacts": [
+    "events.jsonl",
+    "screenshots/P03-evidence-S1.png",
+    "screenshots/P03-evidence-S2.png"
+  ],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 905,
+    "modelRequests": 0,
+    "cost": 0
+  }
+}

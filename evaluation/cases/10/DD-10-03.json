@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-10-03",
+  "system": "10",
+  "title": "换服务清除授权并隔离旧凭据",
+  "split": "development",
+  "family": "10-03-privacy",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:83"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary", "correction"],
+  "track": "desktop",
+  "requirements": ["R10-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/10/DD-10-03",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "在两个不同端口启动审计服务A/B；A配置合成密钥并完成授权，B不输入任何密钥；只用合成值。",
+      "从仓库根执行 node evaluation/tools/mock-service.mjs --out <隔离运行目录>/service --port 0 --mode text；读取status.json中的url，endpoint使用url+/responses。审计位于requests.jsonl，仅合成body和credentialSha256，不记录原始headers；详见本案例AUDIT.md。",
+      "启动两个不同out/端口的公共mock服务A/B；A输入合成key SYNTHETIC_KEY_A_10_03并授权，B不输入key且不重新授权；以credentialSha256检查B没有沿用A鉴权。"
+    ]
+  },
+  "user": {
+    "goal": "切换模型服务并检查配置状态",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "操作任务：从本机服务A切换到本机服务B，检查旧密钥和目录授权。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "在设置中将A地址改为B地址，保存但不重新勾选发送许可。",
+      "observe": "确认需要重新确认权限。"
+    },
+    {
+      "action": "尝试发送，再明确授权B但仍不输入新key，发一条通用问题。",
+      "observe": "检查B审计均不含A key；具体鉴权失败不影响旧key隔离判定。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "更换endpoint保存后发送权限恢复未确认，正常请求被阻止",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "B的审计中不出现A的合成key；检查仅公开设置状态而不读取真实凭据",
+      "kind": "programmatic",
+      "gate": true
+    }
+  ],
+  "mustNot": ["把旧服务密钥自动带到新endpoint"],
+  "grading": {
+    "oracle": "oracles/10/DD-10-03.json",
+    "rubric": ["endpoint_credential_isolation"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "来源和授权边界工程回归；不替代本案例网络审计及桌面操作"
+      }
+    ]
+  },
+  "variants": []
+}

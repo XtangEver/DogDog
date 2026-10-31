@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-08-03",
+  "system": "08",
+  "title": "查看编辑档案后旧值失效",
+  "split": "development",
+  "family": "08-03-memory",
+  "capability": "target",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:63"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["correction"],
+  "track": "desktop",
+  "requirements": ["R08-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/08/DD-08-03",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "当前未实现长期协作档案；本案为target能力。若无公开可执行入口，记录明确能力缺口，不得假装通过或用测试者外部笔记替代。",
+      "先按公开档案流程确认保存旧偏好“小工具优先Python”，再执行本任务。",
+      "未来有档案入口时只通过公开界面建立/查看/修改；当前缺口必须作为target未满足记录。夹具仅提供合成上下文，不自动构成保存授权。"
+    ]
+  },
+  "user": {
+    "goal": "修改已保存的工具选择偏好",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "之前记成了Python优先，现在请改成：Windows本地小工具默认TypeScript。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "查看旧条目并通过用户指令/公开编辑入口修改。",
+      "observe": "核对活动条目及范围。"
+    },
+    {
+      "action": "新建讨论问Windows本地小工具建议使用什么语言。",
+      "observe": "检查不再沿用旧默认，且不扩展到其他场景。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "用户可查看并修改该条目，更新内容保留新范围",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "新讨论Windows小工具选型时不继续使用旧Python默认",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["旧值与新值同时作为活动默认", "任意扩大偏好范围"],
+  "grading": {
+    "oracle": "oracles/08/DD-08-03.json",
+    "rubric": ["memory_edit"],
+    "checks": []
+  },
+  "variants": []
+}

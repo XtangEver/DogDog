@@ -1,0 +1,1129 @@
+{
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "manifest": {
+    "schemaVersion": "1.0",
+    "runId": "pilot-2026-10-31T03-41-40-235Z",
+    "createdAt": "2026-10-31T03:41:47.239Z",
+    "application": {
+      "version": "0.3.0",
+      "executable": "D:\\work_record\\DogDog\\node_modules\\electron\\dist\\electron.exe",
+      "executableSha256": "c579acaab64b1c456bda1693cdf1a2ec7e4de7738b0e2d1b6349d60e8087143c",
+      "build": "development Electron"
+    },
+    "suiteVersion": "1.0.0",
+    "platform": "win32",
+    "executionTrack": "diagnostic",
+    "mockService": true,
+    "model": {
+      "protocol": "openai-responses",
+      "name": "synthetic-pilot",
+      "endpoint": "http://127.0.0.1:54510/responses",
+      "configuration": {
+        "scripted": true
+      }
+    },
+    "display": {
+      "width": 1440,
+      "height": 960,
+      "scale": null
+    },
+    "isolation": {
+      "profile": "D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\profile",
+      "traceRoots": [
+        "D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex\\sessions",
+        "D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex\\archived_sessions"
+      ],
+      "excluded": ["oracles", "cases", "run outputs", "operator history"]
+    },
+    "fixtureHashes": {
+      "isolation/codex/sessions/a.jsonl": "c69f00bf68ed15350ebd348c385ad6a214728e0ac44649c0702f6391a47ec76a",
+      "isolation/codex/archived_sessions/b.jsonl": "28aa0f38db78ffedebef6771dddb82668c8e9b835601704c4f4eb40bec672976",
+      "isolation/codex/sessions/noise.jsonl": "07fcbedc6754908aa35d1e701c46f886adb14a70d64c5eb9a4f87d9d5d658475"
+    },
+    "sourceRevision": "c2c670c73bef47e6e58843449521bc719955781d",
+    "caseIds": [
+      "DD-01-01",
+      "DD-03-01",
+      "DD-04-01",
+      "DD-05-01",
+      "DD-07-01",
+      "DD-11-01",
+      "DD-10-01",
+      "DD-12-04"
+    ],
+    "bundleHashes": {
+      "D:\\work_record\\DogDog\\dist\\main.cjs": "72003061040879cf4a4db595cad339304b22fac77505e5fe32aaccbb43171741",
+      "D:\\work_record\\DogDog\\dist\\preload.cjs": "711c2a150234a6fab28290814503066a82b6166e4e10ab2894cee5d0b0563cad"
+    },
+    "limitations": [
+      "display scale unknown; no screenshot-based scale inference",
+      "source worktree includes pre-existing uncommitted changes; bundle hashes identify tested code"
+    ]
+  },
+  "taskCount": 96,
+  "trialCount": 8,
+  "firstAttemptPolicy": true,
+  "rows": [
+    {
+      "caseId": "DD-01-01",
+      "system": "01",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:40.694Z",
+          "metrics": {
+            "elapsedMs": 1190,
+            "modelRequests": 0,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-01-02",
+      "system": "01",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-01-03",
+      "system": "01",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-01-04",
+      "system": "01",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-01-05",
+      "system": "01",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-01-06",
+      "system": "01",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-01-07",
+      "system": "01",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-01-08",
+      "system": "01",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-01",
+      "system": "02",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-02",
+      "system": "02",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-03",
+      "system": "02",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-04",
+      "system": "02",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-05",
+      "system": "02",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-06",
+      "system": "02",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-07",
+      "system": "02",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-02-08",
+      "system": "02",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-01",
+      "system": "03",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:41.890Z",
+          "metrics": {
+            "elapsedMs": 462,
+            "modelRequests": 4,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-03-02",
+      "system": "03",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-03",
+      "system": "03",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-04",
+      "system": "03",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-05",
+      "system": "03",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-06",
+      "system": "03",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-07",
+      "system": "03",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-03-08",
+      "system": "03",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-01",
+      "system": "04",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:42.353Z",
+          "metrics": {
+            "elapsedMs": 905,
+            "modelRequests": 0,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-04-02",
+      "system": "04",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-03",
+      "system": "04",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-04",
+      "system": "04",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-05",
+      "system": "04",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-06",
+      "system": "04",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-07",
+      "system": "04",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-04-08",
+      "system": "04",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-01",
+      "system": "05",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:44.207Z",
+          "metrics": {
+            "elapsedMs": 500,
+            "modelRequests": 2,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-05-02",
+      "system": "05",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-03",
+      "system": "05",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-04",
+      "system": "05",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-05",
+      "system": "05",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-06",
+      "system": "05",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-07",
+      "system": "05",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-05-08",
+      "system": "05",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-01",
+      "system": "06",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-02",
+      "system": "06",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-03",
+      "system": "06",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-04",
+      "system": "06",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-05",
+      "system": "06",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-06",
+      "system": "06",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-07",
+      "system": "06",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-06-08",
+      "system": "06",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-01",
+      "system": "07",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:43.259Z",
+          "metrics": {
+            "elapsedMs": 947,
+            "modelRequests": 0,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-07-02",
+      "system": "07",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-03",
+      "system": "07",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-04",
+      "system": "07",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-05",
+      "system": "07",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-06",
+      "system": "07",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-07",
+      "system": "07",
+      "capability": "target",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-07-08",
+      "system": "07",
+      "capability": "target",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-01",
+      "system": "08",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-02",
+      "system": "08",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-03",
+      "system": "08",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-04",
+      "system": "08",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-05",
+      "system": "08",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-06",
+      "system": "08",
+      "capability": "target",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-07",
+      "system": "08",
+      "capability": "target",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-08-08",
+      "system": "08",
+      "capability": "target",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-01",
+      "system": "09",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-02",
+      "system": "09",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-03",
+      "system": "09",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-04",
+      "system": "09",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-05",
+      "system": "09",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-06",
+      "system": "09",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-07",
+      "system": "09",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-09-08",
+      "system": "09",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-01",
+      "system": "10",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:45.726Z",
+          "metrics": {
+            "elapsedMs": 1024,
+            "modelRequests": 0,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-10-02",
+      "system": "10",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-03",
+      "system": "10",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-04",
+      "system": "10",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-05",
+      "system": "10",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-06",
+      "system": "10",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-07",
+      "system": "10",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-10-08",
+      "system": "10",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-01",
+      "system": "11",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:44.708Z",
+          "metrics": {
+            "elapsedMs": 1017,
+            "modelRequests": 1,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-11-02",
+      "system": "11",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-03",
+      "system": "11",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-04",
+      "system": "11",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-05",
+      "system": "11",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-06",
+      "system": "11",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-07",
+      "system": "11",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-11-08",
+      "system": "11",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-01",
+      "system": "12",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-02",
+      "system": "12",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-03",
+      "system": "12",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-04",
+      "system": "12",
+      "capability": "current",
+      "split": "development",
+      "status": "insufficient_evidence",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "insufficient_evidence",
+          "startedAt": "2026-10-31T03:41:46.751Z",
+          "metrics": {
+            "elapsedMs": 312,
+            "modelRequests": 0,
+            "cost": 0
+          },
+          "pilotOutcome": "pass"
+        }
+      ]
+    },
+    {
+      "caseId": "DD-12-05",
+      "system": "12",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-06",
+      "system": "12",
+      "capability": "current",
+      "split": "development",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-07",
+      "system": "12",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    },
+    {
+      "caseId": "DD-12-08",
+      "system": "12",
+      "capability": "current",
+      "split": "holdout",
+      "status": "not_run",
+      "attempts": []
+    }
+  ],
+  "grouped": [
+    {
+      "system": "01",
+      "name": "初次使用与配置",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    },
+    {
+      "system": "02",
+      "name": "轨迹理解与兼容",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 0,
+        "not_implemented": 0,
+        "not_run": 8
+      }
+    },
+    {
+      "system": "03",
+      "name": "自主发现与检索",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    },
+    {
+      "system": "04",
+      "name": "证据与推断边界",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    },
+    {
+      "system": "05",
+      "name": "持续对话与需求理解",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    },
+    {
+      "system": "06",
+      "name": "复盘与改进建议",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 0,
+        "not_implemented": 0,
+        "not_run": 8
+      }
+    },
+    {
+      "system": "07",
+      "name": "报告与效果闭环",
+      "capability": "current",
+      "total": 4,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 3
+      }
+    },
+    {
+      "system": "07",
+      "name": "报告与效果闭环",
+      "capability": "target",
+      "total": 4,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 0,
+        "not_implemented": 0,
+        "not_run": 4
+      }
+    },
+    {
+      "system": "08",
+      "name": "可控协作档案",
+      "capability": "target",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 0,
+        "not_implemented": 0,
+        "not_run": 8
+      }
+    },
+    {
+      "system": "09",
+      "name": "桌面交互与使用负担",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 0,
+        "not_implemented": 0,
+        "not_run": 8
+      }
+    },
+    {
+      "system": "10",
+      "name": "权限、隐私与对抗",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    },
+    {
+      "system": "11",
+      "name": "状态、异常与恢复",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    },
+    {
+      "system": "12",
+      "name": "协议、发布与规模",
+      "capability": "current",
+      "total": 8,
+      "states": {
+        "pass": 0,
+        "product_failure": 0,
+        "infrastructure_failure": 0,
+        "grading_dispute": 0,
+        "insufficient_evidence": 1,
+        "not_implemented": 0,
+        "not_run": 7
+      }
+    }
+  ]
+}

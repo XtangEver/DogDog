@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-02",
+  "system": "11",
+  "title": "生成中异常退出后的恢复",
+  "split": "development",
+  "family": "crash-during-generation",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.test.ts:421"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["error", "recovery"],
+  "track": "desktop",
+  "requirements": ["R11-02"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-02",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-02 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/11/DD-11-02/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=slow；执行者仅获URL与合成key。",
+      "强制结束仅限manifest中记录的隔离DogDog进程ID；不得用Stop-Process按全局进程名杀正式应用。",
+      "慢服务发送“开始查证”首段后保持连接而不完成；不要等待固定30秒结束。停止/异常退出场景由用户或管理员明确中断。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。",
+      "中途阶段：桌面执行者看到首段输出后暂停；管理员保存隔离进程ID并强制结束，仅通知执行者进程已结束。进程与请求取证由管理员完成，不交给桌面执行者读profile。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "进程异常结束后保留讨论且不自动重发",
+    "brief": "只允许结束本次隔离DogDog进程，不影响正式应用。",
+    "knownFacts": ["只允许结束本次隔离DogDog进程，不影响正式应用。"],
+    "initialMessage": "发送一条会持续30秒的分析请求。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "进程异常结束后保留讨论且不自动重发"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送一条持续分析请求，待可见首段输出后暂停操作；等待管理员确认已结束本次隔离进程。",
+      "observe": "留下崩溃时的截图和请求计数；不通过正常退出伪装。"
+    },
+    {
+      "action": "从同一隔离profile重新启动应用，打开刚才讨论。",
+      "observe": "已有问题和部分输出保留，中断状态明确。"
+    },
+    {
+      "action": "等待10秒，再手动发送“继续核对”。",
+      "observe": "重启不自动请求，用户提交后才继续。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "异常退出后对话可恢复且生成中消息标为未完成/中断。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "重启本身不重发模型请求，只有用户显式提交才请求。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "重启自动续发导致重复计费，或中断文本被显示为完整报告。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-02.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

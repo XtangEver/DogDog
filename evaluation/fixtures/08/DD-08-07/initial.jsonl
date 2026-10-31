@@ -1,0 +1,2 @@
+{"type": "session_meta", "payload": {"id": "synthetic-DD-08-07-record.jsonl-initial", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}, "timestamp": "2026-10-20T10:00:00Z"}
+{"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "旧观察：一次简单任务用了验收清单后通过，没有对照。"}]}, "timestamp": "2026-10-20T10:01:00Z"}

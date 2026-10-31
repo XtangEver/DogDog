@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-02",
+  "system": "07",
+  "title": "新增证据生成报告新版本保留旧版",
+  "split": "development",
+  "family": "07-02-report",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:62"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "correction"],
+  "track": "desktop",
+  "requirements": ["R07-02"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/07/DD-07-02",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "首次只关联 initial.jsonl；followup.jsonl 暂放在未授权临时目录，首份报告保存后再手动关联。"
+    ],
+    "inputFiles": ["initial.jsonl"]
+  },
+  "user": {
+    "goal": "根据新增材料修订报告并查看历史版本",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "先根据当前记录总结导出任务的验收状态。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "只用初始来源生成回答并保存报告。",
+      "observe": "确认空值状态为未知。"
+    },
+    {
+      "action": "新增后续来源并说“请更新验收状态”，保存新的完整回答。",
+      "observe": "比较两个报告版本和证据，旧版不得被改写。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "先仅关联初始文件生成并保存未验证空值的v1",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "补充后续来源重新讨论并保存新版本，旧版正文保持不变",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C3",
+      "description": "新版本明确新证据的作用，不把旧版写成当时已有验证",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["覆盖历史报告导致版本丢失", "把补充证据倒填为最初已知"],
+  "grading": {
+    "oracle": "oracles/07/DD-07-02.json",
+    "rubric": ["report_versioning"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

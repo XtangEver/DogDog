@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-04-02-a","cwd":"D:\\synthetic-work\\alpha","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"确认alpha项目缓存刷新。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"alpha","arguments":"{\"cmd\": \"cache-check\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"alpha","output":"alpha缓存刷新FAIL：仍返回旧值"},"timestamp":"2026-10-20T10:00:03Z"}

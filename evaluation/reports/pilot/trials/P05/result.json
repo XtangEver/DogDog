@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "caseId": "DD-07-01",
+  "attempt": 1,
+  "pilotId": "P05",
+  "title": "报告保存与重启恢复",
+  "status": "insufficient_evidence",
+  "pilotOutcome": "pass",
+  "executionTrack": "diagnostic",
+  "blinded": false,
+  "mockService": true,
+  "startedAt": "2026-10-31T03:41:43.259Z",
+  "endedAt": "2026-10-31T03:41:44.206Z",
+  "checks": [
+    {
+      "id": "P05",
+      "passed": true,
+      "observation": "通过UI保存报告并关闭/重启隔离实例；报告入口与原引用恢复。",
+      "evidence": ["events.jsonl", "screenshots/P05-restored.png"]
+    }
+  ],
+  "scores": [],
+  "artifacts": ["events.jsonl", "screenshots/P05-restored.png"],
+  "limitations": [
+    "本轮为非盲Playwright桌面兼容性子场景；未执行对应核心任务的全部验收项。",
+    "mock回答由脚本预制，不证明自主推理或真实模型质量。"
+  ],
+  "reviewer": {
+    "kind": "programmatic",
+    "identity": "evaluation/tools/pilot.mjs",
+    "independentContext": false
+  },
+  "metrics": {
+    "elapsedMs": 947,
+    "modelRequests": 0,
+    "cost": 0
+  }
+}

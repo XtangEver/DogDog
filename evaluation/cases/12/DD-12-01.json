@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-12-01",
+  "system": "12",
+  "title": "三协议碎片化工具循环等价能力",
+  "split": "development",
+  "family": "protocol-fragmented-tool-parity",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.test.ts:218"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary", "recovery"],
+  "track": "desktop",
+  "requirements": ["R12-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/12/DD-12-01",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-12-01 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/12/DD-12-01/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=fragmented-tools；执行者仅获URL与合成key。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "在三种支持协议上完成相同工具查证与恢复",
+    "brief": "三个独立隔离profile分别使用Responses、Chat Completions、Anthropic；mock按字节碎片输出SSE。",
+    "knownFacts": [
+      "三个独立隔离profile分别使用Responses、Chat Completions、Anthropic；mock按字节碎片输出SSE。"
+    ],
+    "initialMessage": "配置指定协议后问“请读取启动记录并引用”。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "在三种支持协议上完成相同工具查证与恢复"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "分别启动管理员准备的三协议独立隔离实例，通过可见设置配置对应协议与完整URL。",
+      "observe": "不会因UTF-8或JSON参数跨块而乱码、漏工具或死循环。"
+    },
+    {
+      "action": "在每个实例通过原生关联轨迹入口导入管理员提供的input.jsonl，再发送查证问题。",
+      "observe": "导入在用户任务允许范围内；真实文件选择器正常工作。"
+    },
+    {
+      "action": "每个协议都完成工具读取、最终回答、引用回看、重启后追问。",
+      "observe": "三协议有相同可见能力，来源内容一致，重启不要求重复授权。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 600000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "三协议碎片SSE均能重组文本与工具参数，并完成一次有效引用回答。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "各协议独立profile重启后可继续且证据可回看；不得用mock结果声称真实服务质量。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "仅换下拉框但服务始终返回同一种协议，或把模拟通过写成三家真实服务验证。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/12/DD-12-01.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

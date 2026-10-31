@@ -1,0 +1,7 @@
+{
+  "mode": "text",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "按case选择的协议输出正常无引用短文本；不伪装完成自主语义检索。"
+}

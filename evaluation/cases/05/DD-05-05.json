@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-05",
+  "system": "05",
+  "title": "明确简洁偏好与问题边界",
+  "split": "development",
+  "family": "05-05-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal"],
+  "track": "desktop",
+  "requirements": ["R05-05"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-05",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "简短查询记录中的处理操作",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "这次启动问题最后做了哪些有效操作？最多3条，只根据记录，不追加建议。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送初始消息，按answers条件分支补充，不提供oracle事实。",
+      "observe": "核对本任务必须条件和禁止结果，保存可见回答与引用/相关状态。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "回答最多3个实质条目且聚焦记录中的操作与验收",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "不追加未被问到的泛化排查、功能建议或追问",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["超过用户规定的3个实质条目", "引入没有记录支持的排查结果"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-05.json",
+    "rubric": ["response_scope"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "将问题改为“请详细解释每一步依据”，保留相同轨迹",
+      "expectedDifference": "允许展开，但每步仍需有记录依据"
+    },
+    {
+      "id": "V2",
+      "change": "删除健康检查返回200这一行",
+      "expectedDifference": "可说明操作已做，不可再声称健康检查通过"
+    }
+  ]
+}

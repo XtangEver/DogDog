@@ -1,0 +1,5 @@
+{"type":"session_meta","payload":{"id":"synthetic-02-05","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"compacted","payload":{"message":"早期上下文已压缩"},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"reasoning","encrypted_content":"SYNTHETIC_HIDDEN_REASONING_TOKEN"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"继续检查图片导出。"}]},"timestamp":"2026-10-20T10:00:03Z"}
+{"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"text":"当前片段未找到你之前的验收标准。"}]},"timestamp":"2026-10-20T10:00:04Z"}

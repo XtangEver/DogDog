@@ -1,0 +1,58 @@
+{
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "pilotSlices": 8,
+  "slicePasses": 8,
+  "coreTaskPasses": 0,
+  "results": [
+    {
+      "pilotId": "P01",
+      "caseId": "DD-01-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P02",
+      "caseId": "DD-03-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P03",
+      "caseId": "DD-04-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P05",
+      "caseId": "DD-07-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P04",
+      "caseId": "DD-05-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P06",
+      "caseId": "DD-11-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P07",
+      "caseId": "DD-10-01",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    },
+    {
+      "pilotId": "P08",
+      "caseId": "DD-12-04",
+      "status": "insufficient_evidence",
+      "pilotOutcome": "pass"
+    }
+  ],
+  "blinded": false,
+  "mockService": true
+}

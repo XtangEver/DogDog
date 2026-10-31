@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "pilot-2026-10-31T03-41-40-235Z",
+  "createdAt": "2026-10-31T03:41:47.239Z",
+  "application": {
+    "version": "0.3.0",
+    "executable": "D:\\work_record\\DogDog\\node_modules\\electron\\dist\\electron.exe",
+    "executableSha256": "c579acaab64b1c456bda1693cdf1a2ec7e4de7738b0e2d1b6349d60e8087143c",
+    "build": "development Electron"
+  },
+  "suiteVersion": "1.0.0",
+  "platform": "win32",
+  "executionTrack": "diagnostic",
+  "mockService": true,
+  "model": {
+    "protocol": "openai-responses",
+    "name": "synthetic-pilot",
+    "endpoint": "http://127.0.0.1:54510/responses",
+    "configuration": {
+      "scripted": true
+    }
+  },
+  "display": {
+    "width": 1440,
+    "height": 960,
+    "scale": null
+  },
+  "isolation": {
+    "profile": "D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\profile",
+    "traceRoots": [
+      "D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex\\sessions",
+      "D:\\work_record\\DogDog\\evaluation\\runs\\pilot-2026-10-31T03-41-40-235Z\\isolation\\codex\\archived_sessions"
+    ],
+    "excluded": ["oracles", "cases", "run outputs", "operator history"]
+  },
+  "fixtureHashes": {
+    "isolation/codex/sessions/a.jsonl": "c69f00bf68ed15350ebd348c385ad6a214728e0ac44649c0702f6391a47ec76a",
+    "isolation/codex/archived_sessions/b.jsonl": "28aa0f38db78ffedebef6771dddb82668c8e9b835601704c4f4eb40bec672976",
+    "isolation/codex/sessions/noise.jsonl": "07fcbedc6754908aa35d1e701c46f886adb14a70d64c5eb9a4f87d9d5d658475"
+  },
+  "sourceRevision": "c2c670c73bef47e6e58843449521bc719955781d",
+  "caseIds": [
+    "DD-01-01",
+    "DD-03-01",
+    "DD-04-01",
+    "DD-05-01",
+    "DD-07-01",
+    "DD-11-01",
+    "DD-10-01",
+    "DD-12-04"
+  ],
+  "bundleHashes": {
+    "D:\\work_record\\DogDog\\dist\\main.cjs": "72003061040879cf4a4db595cad339304b22fac77505e5fe32aaccbb43171741",
+    "D:\\work_record\\DogDog\\dist\\preload.cjs": "711c2a150234a6fab28290814503066a82b6166e4e10ab2894cee5d0b0563cad"
+  },
+  "limitations": [
+    "display scale unknown; no screenshot-based scale inference",
+    "source worktree includes pre-existing uncommitted changes; bundle hashes identify tested code"
+  ]
+}

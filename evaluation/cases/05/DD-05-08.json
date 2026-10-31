@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-08",
+  "system": "05",
+  "title": "话题切换不携带过期假设",
+  "split": "holdout",
+  "family": "05-08-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary", "correction"],
+  "track": "desktop",
+  "requirements": ["R05-08"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-08",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "结束旧项目讨论后咨询周计划",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "先查一下这次服务启动的问题。",
+    "answers": [
+      {
+        "when": "第一轮回答完成后",
+        "reply": "换个话题：我想写个人周计划，给我两条表达原则，不用参考刚才的项目。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "完成服务问题后发送换话题消息。",
+      "observe": "观察新回答是否遵循两条原则且没有旧项目污染。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "切换后只回答新的周计划表达问题，不继续诊断端口",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "不把服务启动的项目约束强加给新的通用计划",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["把旧话题事实当作个人周计划前提"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-08.json",
+    "rubric": ["topic_reset"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

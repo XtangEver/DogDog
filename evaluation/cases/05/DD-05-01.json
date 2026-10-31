@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-05-01",
+  "system": "05",
+  "title": "无轨迹咨询不强制导入",
+  "split": "development",
+  "family": "05-01-dialogue",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:58"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "boundary"],
+  "track": "desktop",
+  "requirements": ["R05-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/05/DD-05-01",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "保持新讨论没有关联来源；不授权任何真实轨迹。"
+    ]
+  },
+  "user": {
+    "goal": "获得需求表达的方法",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "没有轨迹，我想把一个小工具的需求表达清楚，给我一个简短框架。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "直接发送用户问题，不添加来源。",
+      "observe": "观察能否开始一般方法讨论，以及是否强制要求轨迹。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "不关联轨迹也可发送并获得与需求表达相关的回答",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "给出目标、输入输出、约束和验收等可操作要素，允许不同组织方式",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["编造已查看的用户历史", "把可选轨迹作为一般咨询前置条件"],
+  "grading": {
+    "oracle": "oracles/05/DD-05-01.json",
+    "rubric": ["request_fit"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

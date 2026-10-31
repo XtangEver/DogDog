@@ -1,0 +1,7 @@
+{
+  "mode": "slow",
+  "protocol": "case-selected",
+  "syntheticKey": "DD-SYNTHETIC-KEY",
+  "normalText": "配置检查完成。",
+  "requirements": "首个文本片段“开始查证”后延迟30秒完成，记录断开和请求时间。"
+}

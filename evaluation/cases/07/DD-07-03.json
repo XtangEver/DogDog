@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-03",
+  "system": "07",
+  "title": "旧版复盘草稿与报告兼容回看",
+  "split": "development",
+  "family": "07-03-report",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:62"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "recovery"],
+  "track": "desktop",
+  "requirements": ["R07-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/07/DD-07-03",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "使用旧版公开入口创建测试数据，目标填“保留中文列名”，验收填“导出列名与输入一致”；不要手写未经验证的内部持久化格式。"
+    ]
+  },
+  "user": {
+    "goal": "创建并回看旧版复盘",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "操作任务：进入旧版复盘，用合成轨迹创建一次日常复盘并保存。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "进入旧版复盘，手动导入合成轨迹，填目标与验收并完成诊断保存。",
+      "observe": "记录复盘ID/标题及结果。"
+    },
+    {
+      "action": "返回持续对话，再退出重启并打开旧复盘。",
+      "observe": "核对原草稿/报告可回看及源文件未修改。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "从“旧版复盘”入口完成目标/验收/预览/诊断及保存流程",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "返回持续对话并重启后旧复盘仍在原入口可打开，原始轨迹哈希不变",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": ["以新建空复盘替代原记录恢复"],
+  "grading": {
+    "oracle": "oracles/07/DD-07-03.json",
+    "rubric": ["legacy_compatibility"],
+    "checks": [
+      {
+        "entry": "tests/desktop.e2e.ts",
+        "command": "npx playwright test tests/desktop.e2e.ts",
+        "purpose": "旧版复盘、重试与持久化工程回归；不替代本任务的桌面操作与归因语义检查"
+      }
+    ]
+  },
+  "variants": []
+}

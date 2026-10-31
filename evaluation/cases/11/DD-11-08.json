@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-08",
+  "system": "11",
+  "title": "运行中撤权后的后续请求屏障",
+  "split": "holdout",
+  "family": "revoke-while-running-race",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/library.test.ts:356"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["boundary", "recovery", "adversarial"],
+  "track": "desktop",
+  "requirements": ["R11-08"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-08",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-08 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/11/DD-11-08/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=delayed-tool；执行者仅获URL与合成key。",
+      "在撤权设置保存之后，管理员向 <mock base>/control POST {\"release\":true} 释放旧响应。必须记录保存时刻和释放时刻；已断开的连接不重建。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "撤权后不让旧任务继续发送后续上下文",
+    "brief": "受控服务第一请求停顿；管理员可通过正常设置撤销权限，必要时先停止当前分析。",
+    "knownFacts": [
+      "受控服务第一请求停顿；管理员可通过正常设置撤销权限，必要时先停止当前分析。"
+    ],
+    "initialMessage": "启动一次会产生多次请求的历史查证。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "撤权后不让旧任务继续发送后续上下文"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送查询并截取运行中界面，等待管理员确认响应暂缓。",
+      "observe": "有明确运行中状态。"
+    },
+    {
+      "action": "若设置可用则直接打开并撤销发送权限；若被禁用则先停止，再打开设置撤权。",
+      "observe": "撤权可完成，已发请求不声称能够收回。"
+    },
+    {
+      "action": "等待管理员确认旧响应已释放，再等10秒，尝试发送新问题。",
+      "observe": "无撤权后的工具结果续发或新请求；界面提示需重新授权。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "以撤权设置保存时刻为界，后续模型请求数不增长，旧上下文不能因迟到响应续发。",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "用户能通过正常停止/设置路径撤权，界面不谎称已撤回此前发送内容。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "撤权后迟到工具结果仍发往服务，或声称服务已收到内容被撤回删除。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-08.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

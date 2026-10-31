@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-02-06",
+  "system": "02",
+  "title": "中断后续写仍沿物理行号恢复查证",
+  "split": "development",
+  "family": "02-interrupted-append",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": [
+      "AGENTS.md:50",
+      "src/core/agent.ts:12",
+      "src/core/trace.ts:101"
+    ],
+    "privacy": "no private trace content"
+  },
+  "tags": ["recovery", "missing"],
+  "track": "desktop",
+  "requirements": ["R02-06"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/02/DD-02-06",
+    "setup": [
+      "按steps把指定夹具复制到隔离临时目录；仅授权指定工作副本目录及测试模型服务，不使用正式配置或真实用户轨迹。",
+      "使用真实被测模型运行；只读原始夹具，运行前后核对哈希；变体仅修改临时副本。",
+      "仅inputFiles列出的JSONL可初始进入授权目录；其他JSONL先存放授权目录之外的deferred-fixtures，按steps再复制，不得提前被Agent检索。"
+    ],
+    "inputFiles": ["session-a.jsonl"]
+  },
+  "user": {
+    "goal": "报价单列宽修复最终验收了吗？",
+    "brief": "你是实际使用者；只知道 knownFacts，不能查看评分底稿或向 DogDog透露评测规则。",
+    "knownFacts": [],
+    "initialMessage": "报价单列宽修复最终验收了吗？",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "先仅将session-a.jsonl复制到隔离轨迹目录，启动并询问列宽是否验收。",
+      "observe": "回答中断、无结果，不能宣称通过。"
+    },
+    {
+      "action": "关闭DogDog，将continuation.jsonl复制进同一获准目录后重启，再发送 initialMessage。",
+      "observe": "重新发现后续记录，引用新来源的通过结果；旧中断证据仍可回看。"
+    }
+  ],
+  "completion": {
+    "when": "任务特定验收条件已有可观察证据，或明确失败并保留执行记录。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "原记录保留中断和缺结果警告；不伪造原调用结果。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "跨两份记录给出先中断、后新验证通过的时间关系并分别引用。",
+      "kind": "semantic",
+      "gate": false
+    }
+  ],
+  "mustNot": ["只凭原记录宣称未修复。", "把后续独立调用的输出移到原记录行号。"],
+  "grading": {
+    "oracle": "oracles/02/DD-02-06.json",
+    "rubric": ["task_success", "evidence_grounding", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/core.test.ts",
+        "command": "npx vitest run tests/core.test.ts",
+        "purpose": "相关工程回归，不能替代本任务真实模型及桌面运行"
+      }
+    ]
+  },
+  "variants": []
+}

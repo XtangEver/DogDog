@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-02-07-child","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture","parent_thread_id":"synthetic-02-07-main"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"尝试另一种数据清理实现。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"branch-test","arguments":"{\"cmd\": \"check-clean --branch\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"branch-test","output":"试验分支验收：PASS；尚未合并主工程"},"timestamp":"2026-10-20T10:00:03Z"}

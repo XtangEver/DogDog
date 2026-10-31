@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-02-08",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "累计计数的最大值为420。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-08/session-a.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "\"total_token_usage\":{\"total_tokens\":420}"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "镜像累计计数同为420，不应再次相加。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-08/session-a.jsonl",
+          "fromLine": 4,
+          "toLine": 4,
+          "contains": "\"thread_token_usage\":{\"total_tokens\":420}"
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "statement": "较晚累计计数降到380，不能覆盖历史最大值。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-08/session-a.jsonl",
+          "fromLine": 5,
+          "toLine": 5,
+          "contains": "\"thread_token_usage\":{\"total_tokens\":380}"
+        }
+      ]
+    },
+    {
+      "id": "F4",
+      "statement": "最后事件发生在10:00:12Z。",
+      "evidence": [
+        {
+          "file": "fixtures/02/DD-02-08/session-a.jsonl",
+          "fromLine": 6,
+          "toLine": 6,
+          "contains": "字符统计检查已完成。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [],
+  "unknowns": [
+    "没有输入输出token拆分、服务价格、真实计费和纯计算时间，无法确认准确费用。"
+  ],
+  "allowedConclusions": [
+    "记录口径为420 tokens，首末事件相差12秒；缺少计费拆分和服务价格，无法算准确费用。",
+    "可报告最大累计计数420与12秒记录跨度；它们不等于账单和纯模型计算时间。"
+  ],
+  "forbiddenConclusions": [
+    "重复累计成1220或取最后380。",
+    "编造实时价格并声称准确费用。"
+  ],
+  "rubric": [
+    {
+      "dimension": "task_success",
+      "zero": "总量1220 tokens，按当前统一价格收费0.01元。",
+      "one": "指出部分关键事实，但未完整满足：Trace.stats.totalTokens=420，durationMs=12000，不求和到1220，也不退回380。",
+      "two": "完整满足：Trace.stats.totalTokens=420，durationMs=12000，不求和到1220，也不退回380。；没有输入输出token拆分和服务价格，回答不能给准确收费金额或把记录时间当实际计算耗时。"
+    },
+    {
+      "dimension": "evidence_grounding",
+      "zero": "使用错误来源或捏造支持：总量1220 tokens，按当前统一价格收费0.01元。",
+      "one": "识别“累计计数的最大值为420。”，但漏掉“最后事件发生在10:00:12Z。”的支持或限制。",
+      "two": "准确支持这些关键事实：累计计数的最大值为420。；镜像累计计数同为420，不应再次相加。；较晚累计计数降到380，不能覆盖历史最大值。；最后事件发生在10:00:12Z。；不扩展到unknowns。"
+    },
+    {
+      "dimension": "interaction_quality",
+      "zero": "回避“这份记录报告的token总量和记录持续时间是多少？能换算准确费用吗？”并让用户代查已存在的记录，或回答了无关问题。",
+      "one": "大致完成“时间元数据和重置计数不能误算累计成本”，但引入多余步骤/追问，或未遵守本次目标与范围。",
+      "two": "直接回应“这份记录报告的token总量和记录持续时间是多少？能换算准确费用吗？”；在本任务的交互步骤中保持条件、证据和当前目标一致，不重复索取已知条件。"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "记录口径为420 tokens，首末事件相差12秒；缺少计费拆分和服务价格，无法算准确费用。",
+      "rationale": "满足任务核心条件；实际运行时所有历史事实须添加本轮工具返回的来源引用。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "总量1220 tokens，按当前统一价格收费0.01元。",
+      "rationale": "违反事实底稿或核心约束；不能被流畅表达、正确格式抵消。"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "可报告最大累计计数420与12秒记录跨度；它们不等于账单和纯模型计算时间。",
+      "rationale": "不同表达或查证路径同样有效，不要求逐字匹配参考答案。 此段为回答内容锚点；计数、引用回看、重启等必须检查仍须独立过程证据，不得仅凭示例文字判通过。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "执行解析并核对结构与警告；对照事实与反证判定。",
+      "expected": "Trace.stats.totalTokens=420，durationMs=12000，不求和到1220，也不退回380。"
+    },
+    {
+      "mustId": "C2",
+      "method": "执行解析并核对结构与警告；对照事实与反证判定。",
+      "expected": "没有输入输出token拆分和服务价格，回答不能给准确收费金额或把记录时间当实际计算耗时。"
+    }
+  ]
+}

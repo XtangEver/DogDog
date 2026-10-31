@@ -1,0 +1,4 @@
+{"type":"session_meta","payload":{"id":"synthetic-03-01-a","cwd":"D:\\synthetic-work\\project-a","cli_version":"fixture"},"timestamp":"2026-10-20T10:00:00Z"}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"蓝鲸表格导出中文变成方框。"}]},"timestamp":"2026-10-20T10:00:01Z"}
+{"type":"response_item","payload":{"type":"function_call","name":"exec_command","call_id":"font-a","arguments":"{\"cmd\": \"check-pdf\"}"},"timestamp":"2026-10-20T10:00:02Z"}
+{"type":"response_item","payload":{"type":"function_call_output","call_id":"font-a","output":"中文字体检查FAILED：缺少嵌入字体"},"timestamp":"2026-10-20T10:00:03Z"}

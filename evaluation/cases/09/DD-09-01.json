@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-09-01",
+  "system": "09",
+  "title": "简短历史查询的相关性与表达克制",
+  "split": "development",
+  "family": "concise-relevant-history-answer",
+  "capability": "current",
+  "provenance": {
+    "kind": "history_adapted",
+    "sources": ["verification/retest-v03/REPORT.md:30"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["normal"],
+  "track": "desktop",
+  "requirements": ["R09-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/09/DD-09-01",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-09-01 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "快速知道一次启动故障处理及验证状态",
+    "brief": "只需要已记录结论，不需要通用排查教程。",
+    "knownFacts": ["只需要已记录结论，不需要通用排查教程。"],
+    "initialMessage": "上次启动失败怎么处理的？有复测吗？请三句话内回答并引用。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "快速知道一次启动故障处理及验证状态"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "在已授权合成历史的新讨论中发送问题，不指定轨迹路径或工具。",
+      "observe": "自主检索启动处理与复测记录。"
+    },
+    {
+      "action": "阅读第一句及全部回答，点击支持复测的引用。",
+      "observe": "首句回答处理与结果；三句话内引用可回看，不附加无关教程。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "回答准确说明调整启动等待后重新启动成功，引用处理与复测两份原文。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "遵守三句话限制，不增加无线设备、电池或其他无关排查，不追加无必要问题。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "长篇列出十条无关排查，或不看复测就宣称未知；末尾追问要不要教程。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/09/DD-09-01.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "V1",
+      "change": "初始问题改为“请详细解释处理思路和证据不足之处”。",
+      "expectedDifference": "允许较长解释，但仍不得引入与记录无关的故障。"
+    },
+    {
+      "id": "V2",
+      "change": "移除contrast.jsonl的复测记录。",
+      "expectedDifference": "明确没有复测依据，不得声称恢复成功。"
+    }
+  ]
+}

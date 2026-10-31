@@ -1,0 +1,3 @@
+{"timestamp": "2026-10-20T10:00:00Z", "type": "session_meta", "payload": {"id": "synthetic-DD-12-05-0", "cwd": "D:\\synthetic-work", "cli_version": "fixture"}}
+{"timestamp": "2026-10-20T10:00:00Z", "type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"text": "去年那次“琥珀启动”怎么处理的？请给原文。"}]}}
+{"timestamp": "2026-10-20T10:00:00Z", "type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"text": "琥珀启动：等待改为5秒。"}]}}

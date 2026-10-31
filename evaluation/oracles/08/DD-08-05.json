@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-08-05",
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "研究原型项目允许先做小实验快速验证。",
+      "evidence": [
+        {
+          "file": "fixtures/08/DD-08-05/record.jsonl",
+          "fromLine": 2,
+          "toLine": 2,
+          "contains": "研究原型项目允许先做小实验快速验证。"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "statement": "财务导出项目要求修改前先补测试并复核结果。",
+      "evidence": [
+        {
+          "file": "fixtures/08/DD-08-05/record.jsonl",
+          "fromLine": 3,
+          "toLine": 3,
+          "contains": "财务导出项目要求修改前先补测试并复核结果。"
+        }
+      ]
+    }
+  ],
+  "counterEvidence": [
+    "当前不存在长期档案功能，不得把外部执行Agent自己的记忆视为DogDog能力。"
+  ],
+  "unknowns": [
+    "本合成案例不能证明真实用户长期收益或真人主观体验。",
+    "未来公开档案入口的具体布局尚未实现。"
+  ],
+  "allowedConclusions": [
+    "研究原型使用快速实验方式；财务导出仍先测试并复核，两条范围分别可查。",
+    "可以在项目不明时先问属于哪个场景，而不强行选择一条。"
+  ],
+  "forbiddenConclusions": [
+    "既然你喜欢快，财务导出也默认跳过测试。",
+    "用低约束场景偏好覆盖高约束项目"
+  ],
+  "rubric": [
+    {
+      "dimension": "memory_scope",
+      "zero": "混用规则导致财务跳测",
+      "one": "记录有范围但应用偶尔混淆",
+      "two": "范围清楚且不明时澄清"
+    }
+  ],
+  "positiveExamples": [
+    {
+      "answer": "研究原型使用快速实验方式；财务导出仍先测试并复核，两条范围分别可查。",
+      "rationale": "满足本任务必须条件，且结论不超出可观察状态/合成证据。"
+    }
+  ],
+  "negativeExamples": [
+    {
+      "answer": "既然你喜欢快，财务导出也默认跳过测试。",
+      "rationale": "混用规则导致财务跳测"
+    }
+  ],
+  "alternativeValidExamples": [
+    {
+      "answer": "可以在项目不明时先问属于哪个场景，而不强行选择一条。",
+      "rationale": "不同措辞或路径仍满足相同任务边界，不要求复制示范答案。"
+    }
+  ],
+  "checks": [
+    {
+      "mustId": "C1",
+      "method": "外部电脑操作Agent通过公开界面执行并保存前后截图/时间线；仅成功提示不足为证。",
+      "expected": "分别保存项目/场景范围，不互相覆盖成全局规则"
+    },
+    {
+      "mustId": "C2",
+      "method": "独立复核Agent读取已冻结的实际回答及本oracle，逐项对照事实底稿；每项给出回答片段或缺失说明。",
+      "expected": "切换两项目时分别采用适用偏好，不把快速原型当财务项目跳测授权"
+    }
+  ]
+}

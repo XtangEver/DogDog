@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-09-07",
+  "system": "09",
+  "title": "报告入口发现与版本区分",
+  "split": "holdout",
+  "family": "report-discoverability-versioning",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["src/renderer/ChatApp.tsx:400"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["normal", "recovery"],
+  "track": "desktop",
+  "requirements": ["R09-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/09/DD-09-07",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-09-07 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "使用管理员提供的真实测试模型完整URL和专用凭据，通过可见设置配置；只授权本案例codex/sessions及fixture输入，不发送真实历史。缺少模型服务时记录infra_error，不用mock通过冒充语义能力。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置真实测试服务实际支持的完整URL和模型名、专用测试凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "把有用讨论保存并能区分两个版本",
+    "brief": "第一版关注处理结果，第二版增加未知边界。",
+    "knownFacts": ["第一版关注处理结果，第二版增加未知边界。"],
+    "initialMessage": "请简短总结这次启动处理及验收。",
+    "answers": [
+      {
+        "when": "询问本次任务目标",
+        "reply": "把有用讨论保存并能区分两个版本"
+      },
+      {
+        "when": "询问是否可使用其他目录或真实历史",
+        "reply": "只允许本案例隔离目录，请勿读取其他材料。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "完成首轮后，不使用预先给出的按钮坐标，在界面寻找保存报告入口并保存。",
+      "observe": "保存可发现且产生版本1。"
+    },
+    {
+      "action": "追问“补充说明哪些尚未验证”，完成后再次保存。",
+      "observe": "报告版本2保留新内容。"
+    },
+    {
+      "action": "关闭重启，在报告列表分别打开两版。",
+      "observe": "版本、内容、引用对应，不被第二次覆盖。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "可由可见入口保存两次完整回答，重启后两版均可发现。",
+      "kind": "semantic",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "两版内容可区分，旧版引文仍能回看，未完成文本不能冒充完整报告。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "保存第二版后第一版消失，或两个版本都显示同一覆盖内容。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/09/DD-09-07.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

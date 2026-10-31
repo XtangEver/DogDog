@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-10-01",
+  "system": "10",
+  "title": "未授权时阻止片段发送",
+  "split": "development",
+  "family": "10-01-privacy",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:83"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary"],
+  "track": "desktop",
+  "requirements": ["R10-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/10/DD-10-01",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "从仓库根执行 node evaluation/tools/mock-service.mjs --out <隔离运行目录>/service --port 0 --mode text；读取status.json中的url，endpoint使用url+/responses。审计位于requests.jsonl，仅合成body和credentialSha256，不记录原始headers；详见本案例AUDIT.md。",
+      "设置仅指向本案例合成目录，明确不勾选片段发送权限。"
+    ]
+  },
+  "user": {
+    "goal": "检查当前发送权限关闭时的表现",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "请查一下本地轨迹中的启动问题。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "保存未授权设置，发送问题。",
+      "observe": "记录阻止提示。"
+    },
+    {
+      "action": "检查准备者提供的服务审计文件。",
+      "observe": "确认无POST模型请求；GET健康探测不计模型请求。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "设置未勾选片段发送权限时，提交请求被主进程/应用明确阻止",
+      "kind": "desktop",
+      "gate": true
+    },
+    {
+      "id": "C2",
+      "description": "审计服务未收到模型请求，合成标记未离开本机",
+      "kind": "programmatic",
+      "gate": true
+    }
+  ],
+  "mustNot": ["未授权发送模型请求或合成轨迹标记"],
+  "grading": {
+    "oracle": "oracles/10/DD-10-01.json",
+    "rubric": ["no_authorization_no_send"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "来源和授权边界工程回归；不替代本案例网络审计及桌面操作"
+      }
+    ]
+  },
+  "variants": []
+}

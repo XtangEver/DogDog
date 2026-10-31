@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-07-01",
+  "system": "07",
+  "title": "完整回答保存报告并重启恢复",
+  "split": "development",
+  "family": "07-01-report",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:62"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["normal", "recovery"],
+  "track": "desktop",
+  "requirements": ["R07-01"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/07/DD-07-01",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "仅授权或手动关联本案例JSONL夹具；模型使用预先获准的测试服务，外部模拟用户不可见oracle。"
+    ]
+  },
+  "user": {
+    "goal": "保存并再次查看讨论报告",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "请根据记录核对启动处理与验收结果，简短回答并引用原文。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "完成回答后点击“保存为报告”，从报告列表打开。",
+      "observe": "核对正文与回答、来源及行号一致。"
+    },
+    {
+      "action": "退出并重启，打开同一讨论及报告。",
+      "observe": "核对报告存在且引用仍回到原快照。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "完整回答后可点击保存为报告，打开报告时内容与原回答一致",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "重启同一隔离实例后报告及来源引用可回看",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": ["仅凭保存成功提示判通过", "把另一讨论的报告当作当前报告"],
+  "grading": {
+    "oracle": "oracles/07/DD-07-01.json",
+    "rubric": ["report_persistence"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "相关持续对话/报告工程回归；不替代当前真实模型语义与桌面任务"
+      }
+    ]
+  },
+  "variants": []
+}

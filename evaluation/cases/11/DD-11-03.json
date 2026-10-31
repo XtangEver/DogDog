@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-11-03",
+  "system": "11",
+  "title": "等待用户补充跨重启继续",
+  "split": "development",
+  "family": "ask-user-persisted-continuation",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["tests/agent.e2e.ts:186"],
+    "privacy": "no private trace content; all identities and task text are synthetic"
+  },
+  "tags": ["recovery", "missing"],
+  "track": "desktop",
+  "requirements": ["R11-03"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/11/DD-11-03",
+    "setup": [
+      "在仓库根目录运行 node evaluation/tools/cli.mjs prepare --case DD-11-03 --out <新的绝对隔离runDir>；仅使用该目录的profile与codex/sessions，禁止复用正式配置。",
+      "管理员按准备输出的env启动指定目标exe，并记录版本、进程路径、文件哈希；所有网络使用回环mock或明确提供的测试模型服务。",
+      "桌面执行者只获得用户任务与已知背景；oracle、模型响应脚本及白盒请求记录由独立审查者持有。",
+      "管理员执行 node evaluation/fixtures/_support/desktop-service.mjs --plan evaluation/fixtures/11/DD-11-03/mock-plan.json --out <新的mock输出目录> --port 0；从status.json读取实际endpoint，并保留requests.jsonl。mode=ask-user；执行者仅获URL与合成key。",
+      "除任务另有要求外，管理员交付执行者前通过正常可见模型设置配置测试URL、模型fixture-model、合成凭据，以及runDir/codex/sessions目录并主动勾选发送权限；关闭设置回到空白讨论。不得调用私有IPC代替设置流程。"
+    ],
+    "inputFiles": ["context-1.jsonl", "input.jsonl"]
+  },
+  "user": {
+    "goal": "DogDog询问关键背景后重启仍能继续原问题",
+    "brief": "受控服务第一轮调用ask_user询问验收目标；用户已知目标是启动成功且健康检查通过。",
+    "knownFacts": [
+      "受控服务第一轮调用ask_user询问验收目标；用户已知目标是启动成功且健康检查通过。"
+    ],
+    "initialMessage": "请复盘启动任务。",
+    "answers": [
+      {
+        "when": "询问验收目标或完成标准",
+        "reply": "启动成功且健康检查通过。"
+      }
+    ],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "发送问题，等待DogDog询问“验收目标是什么”。",
+      "observe": "界面显示等待补充，而非错误或分析完成。"
+    },
+    {
+      "action": "关闭应用再从同一profile启动，打开原讨论。",
+      "observe": "问题仍在，输入提示可补充。"
+    },
+    {
+      "action": "回答“启动成功且健康检查通过”，观察继续分析。",
+      "observe": "本轮把该回答用于原追问继续，不重复问同一问题。"
+    }
+  ],
+  "completion": {
+    "when": "上述步骤完成且全部检查有可定位证据；基础设施不可用或超时则保留状态与原因，不宣称通过。",
+    "stopAfterMs": 240000,
+    "maxUserTurns": 8
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "等待问题跨重启保留，回答后原工具循环能够继续。",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "补充只记录一次，不自动重复已完成请求，不把等待状态保存成完整报告。",
+      "kind": "desktop",
+      "gate": false
+    }
+  ],
+  "mustNot": [
+    "重启丢失追问，或回答被当成孤立新话题并再次询问相同目标。",
+    "执行者读取oracle后向DogDog泄漏标准答案；用私有IPC/源码编辑代替桌面操作；修改正式安装/配置或读取真实私有轨迹。"
+  ],
+  "grading": {
+    "oracle": "oracles/11/DD-11-03.json",
+    "rubric": ["task_success", "interaction_quality"],
+    "checks": [
+      {
+        "entry": "tests/agent.e2e.ts",
+        "command": "npx playwright test tests/agent.e2e.ts",
+        "purpose": "仅相关工程回归，不替代本案例代理桌面操作或真实语义评测。"
+      }
+    ]
+  },
+  "variants": []
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "id": "DD-10-07",
+  "system": "10",
+  "title": "移除来源后不会全库自动重新加入",
+  "split": "holdout",
+  "family": "10-07-privacy",
+  "capability": "current",
+  "provenance": {
+    "kind": "synthetic",
+    "sources": ["AGENTS.md:83"],
+    "privacy": "no private trace content"
+  },
+  "tags": ["boundary", "correction"],
+  "track": "desktop",
+  "requirements": ["R10-07"],
+  "environment": {
+    "profile": "fresh",
+    "protocol": "openai-responses",
+    "fixtureDir": "fixtures/10/DD-10-07",
+    "setup": [
+      "从主手册准备隔离userData、指定待测可执行文件并记录版本；仅使用本案例合成材料。",
+      "授权本案例目录；首次自然提问确认来源已建立，随后从来源列表移除该文件，保持目录授权不变。",
+      "从仓库根执行 node evaluation/tools/mock-service.mjs --out <隔离运行目录>/service --port 0 --mode text；读取status.json中的url，endpoint使用url+/responses。审计位于requests.jsonl，仅合成body和credentialSha256，不记录原始headers；详见本案例AUDIT.md。",
+      "先授权本案例合成目录并通过公开界面手动关联record.jsonl，使其成为S1；按AUDIT.md将公共mock配置为script读取S1，再完成首轮。这是传输边界回归，不计为真实模型能力通过。"
+    ]
+  },
+  "user": {
+    "goal": "移除一个来源后再次查询同一问题",
+    "brief": "你是只知道当前任务与明确可补充背景的模拟用户；不要阅读事实底稿或评分答案。",
+    "knownFacts": [],
+    "initialMessage": "先查一下合成项目的启动记录。",
+    "answers": [],
+    "unknownReply": "我没有更多记录，请说明哪些无法确认。"
+  },
+  "steps": [
+    {
+      "action": "首次检索后移除该来源，标记审计时间边界。",
+      "observe": "确认移除是单来源而非撤销整个目录。"
+    },
+    {
+      "action": "追问“再查一下刚才的启动记录”。",
+      "observe": "来源列表及新增请求不再含被排除文件或正文。"
+    }
+  ],
+  "completion": {
+    "when": "完成所有公开操作及必须检查；若目标入口不存在，明确记录能力缺口并停止，不伪造结果。",
+    "stopAfterMs": 360000,
+    "maxUserTurns": 6
+  },
+  "must": [
+    {
+      "id": "C1",
+      "description": "首次检索建立来源后，通过界面移除该来源",
+      "kind": "desktop",
+      "gate": false
+    },
+    {
+      "id": "C2",
+      "description": "同一讨论再次全库搜索时不自动重新加入已排除文件，其正文不重发",
+      "kind": "programmatic",
+      "gate": true
+    }
+  ],
+  "mustNot": ["以全库搜索绕过用户单来源移除"],
+  "grading": {
+    "oracle": "oracles/10/DD-10-07.json",
+    "rubric": ["source_exclusion"],
+    "checks": [
+      {
+        "entry": "tests/library.test.ts",
+        "command": "npx vitest run tests/library.test.ts",
+        "purpose": "来源和授权边界工程回归；不替代本案例网络审计及桌面操作"
+      }
+    ]
+  },
+  "variants": []
+}
