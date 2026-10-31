@@ -30,6 +30,7 @@ const schema = z.object({
       trace: traceSchema,
       attachedAt: z.string(),
       active: z.boolean(),
+      libraryRoot: z.string().optional(),
     }),
   ),
   messages: z.array(
@@ -99,6 +100,8 @@ const schema = z.object({
       createdAt: z.string(),
     }),
   ),
+  accessFingerprint: z.string().optional(),
+  excludedPaths: z.array(z.string()).optional(),
   grant: z.object({ fingerprint: z.string(), at: z.string() }).optional(),
 });
 export function validateConversation(input: unknown): Conversation {

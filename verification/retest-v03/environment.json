@@ -1,0 +1,9 @@
+{
+  "TestedExecutable": "D:\\work_record\\DogDog\\release\\v0.3.0\\win-unpacked\\DogDog.exe",
+  "TestedVersion": "0.3.0.0",
+  "Installer": "D:\\work_record\\DogDog\\release\\v0.3.0\\DogDog-Setup-0.3.0.exe",
+  "InstallerSHA256": "F3204F4CA2CD8D3F4C5E24B5A2FEAEA36B983DF88E4D63F4C5E3228A59724900",
+  "DesktopShortcutTarget": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\DogDog\\DogDog.exe",
+  "DesktopInstalledVersion": "0.1.0.0",
+  "InstalledApplicationChanged": false
+}

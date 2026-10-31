@@ -297,16 +297,22 @@ export function parseTraceText(text: string, path = "trace.jsonl"): Trace {
   text.split(/\r?\n/).forEach((s, i) => parser.accept(s, i + 1));
   return parser.finish();
 }
-export async function parseTraceFile(path: string): Promise<Trace> {
+export async function parseTraceFile(
+  path: string,
+  signal?: AbortSignal,
+): Promise<Trace> {
   const s = await stat(path);
   if (!s.isFile() || s.size > 100 * 1024 * 1024)
     throw new Error("请选择不超过 100 MB 的 JSONL 文件。");
   const parser = new TraceParser(path);
-  const input = createReadStream(path, { encoding: "utf8" });
+  const input = createReadStream(path, { encoding: "utf8", signal });
   const lines = createInterface({ input, crlfDelay: Infinity });
   let n = 0;
   try {
-    for await (const line of lines) parser.accept(line, ++n);
+    for await (const line of lines) {
+      if (signal?.aborted) throw new Error("已停止分析。");
+      parser.accept(line, ++n);
+    }
   } finally {
     lines.close();
     input.destroy();

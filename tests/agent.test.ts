@@ -35,6 +35,8 @@ const settings: Settings = {
   model: "fixture",
   maxInputChars: 60000,
   hasKey: true,
+  traceRoots: [],
+  allowTraceSend: true,
 };
 const signal = () => new AbortController().signal;
 const authorize = (c: Conversation, s = settings) => {
@@ -190,7 +192,7 @@ describe("多来源证据与访问边界", () => {
       ),
     ).toThrow();
   });
-  it("新增来源、刷新内容、修改服务和协议都使旧授权失效", () => {
+  it("历史快照指纹仍可读取（不再用于新发送授权）", () => {
     const c = newConversation();
     attachSnapshot(c, parseTraceText(traceFixture()));
     authorize(c);
@@ -289,7 +291,9 @@ describe("协议与流式工具循环", () => {
   it("无轨迹可讨论，授权缺失不发请求，输入超预算不发请求", async () => {
     const c = newConversation(),
       fetcher = fetchTurn("openai-responses", "一般建议：明确验收条件。");
-    await expect(run(c, fetcher)).rejects.toThrow("确认");
+    await expect(
+      run(c, fetcher, "问题", { ...settings, allowTraceSend: false }),
+    ).rejects.toThrow("确认");
     expect(fetcher).not.toHaveBeenCalled();
     authorize(c);
     await run(c, fetcher);

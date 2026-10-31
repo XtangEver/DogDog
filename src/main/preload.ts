@@ -25,8 +25,6 @@ const api: DogDogAPI = {
   refreshSource: (id, sourceId) => invoke("refreshSource", id, sourceId),
   removeSource: (id, sourceId) => invoke("removeSource", id, sourceId),
   previewConversation: (id, text) => invoke("previewConversation", id, text),
-  authorizeConversation: (id, token) =>
-    invoke("authorizeConversation", id, token),
   sendMessage: (id, text) => invoke("sendMessage", id, text),
   saveConversationReport: (id, messageId) =>
     invoke("saveConversationReport", id, messageId),

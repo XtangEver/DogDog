@@ -23,7 +23,6 @@ import {
   attachSnapshot,
   newConversation,
   revokeSource,
-  sourceFingerprint,
 } from "../core/conversations";
 import {
   agentInstructions,
@@ -31,6 +30,13 @@ import {
   initialWire,
   runConversation,
 } from "../core/agent";
+import {
+  applyAccessPolicy,
+  accessFingerprint,
+  within,
+} from "../core/access-policy";
+import { TraceLibrary } from "../core/trace-library";
+import { createToolExecutor } from "../core/tool-runtime";
 import { buildAgentRequest } from "../core/agent-provider";
 import type { Conversation } from "../shared/types";
 
@@ -43,10 +49,6 @@ let store: Store;
 let conversationStore: ConversationStore;
 let conversationMutation = false;
 let recoveryWarning = "";
-const grants = new Map<
-  string,
-  { id: string; fingerprint: string; expiresAt: number }
->();
 async function editConversation(
   id: string,
   work: (c: Conversation) => Promise<void> | void,
@@ -264,6 +266,7 @@ app.whenReady().then(async () => {
       for (const p of paths) {
         const trace = await parseTraceFile(p);
         allowedPaths.add(p);
+        c.excludedPaths = c.excludedPaths?.filter((path) => path !== p);
         attachSnapshot(c, trace);
       }
     }),
@@ -280,14 +283,21 @@ app.whenReady().then(async () => {
   );
   handle("removeSource", (id: string, sourceId: string) =>
     editConversation(id, (c) => {
+      const source = c.sources.find((s) => s.id === sourceId);
       revokeSource(c, sourceId);
+      if (source)
+        c.excludedPaths = [
+          ...new Set([...(c.excludedPaths ?? []), source.trace.path]),
+        ];
     }),
   );
   handle("previewConversation", async (id: string, text: string) => {
     text = z.string().trim().min(1).max(100000).parse(text);
     const c = await conversationStore.load(id),
       settings = await store.settings();
-    const fingerprint = sourceFingerprint(c, settings);
+    const fingerprint = settings.allowTraceSend
+      ? applyAccessPolicy(c, settings)
+      : accessFingerprint(settings);
     const waiting = [...c.runs]
       .reverse()
       .find((r) => r.status === "waiting" && r.fingerprint === fingerprint);
@@ -302,22 +312,14 @@ app.whenReady().then(async () => {
         ]
       : initialWire(c, text);
     const request = buildAgentRequest(
-        settings,
-        agentInstructions,
-        wire,
-        agentTools,
-      ),
-      token = randomUUID();
-    for (const [t, g] of grants) if (g.expiresAt < Date.now()) grants.delete(t);
-    grants.set(token, {
-      id: c.id,
-      fingerprint,
-      expiresAt: Date.now() + 600000,
-    });
+      settings,
+      agentInstructions,
+      wire,
+      agentTools,
+    );
     const sources = c.sources.filter((s) => s.active);
     return {
-      token,
-      requiresAuthorization: c.grant?.fingerprint !== fingerprint,
+      requiresAuthorization: !settings.allowTraceSend,
       protocol: settings.protocol,
       endpoint: request.endpoint,
       model: settings.model,
@@ -326,6 +328,8 @@ app.whenReady().then(async () => {
       payload: JSON.stringify(
         {
           initialRequest: JSON.parse(request.payload),
+          traceRoots: settings.traceRoots,
+          allowTraceSend: settings.allowTraceSend,
           authorizedSources: sources.map((s) => ({
             id: s.id,
             hash: s.trace.hash,
@@ -338,21 +342,6 @@ app.whenReady().then(async () => {
       ),
     };
   });
-  handle("authorizeConversation", (id: string, token: string) =>
-    editConversation(id, async (c) => {
-      const grant = grants.get(token),
-        fingerprint = sourceFingerprint(c, await store.settings());
-      if (
-        !grant ||
-        grant.id !== id ||
-        grant.expiresAt < Date.now() ||
-        grant.fingerprint !== fingerprint
-      )
-        throw new Error("发送范围已变化或预览已过期，请重新检查。");
-      c.grant = { fingerprint, at: new Date().toISOString() };
-      grants.delete(token);
-    }),
-  );
   handle("sendMessage", async (id: string, text: string) => {
     if (controller || conversationMutation)
       throw new Error("已有分析或来源操作正在进行。");
@@ -372,6 +361,13 @@ app.whenReady().then(async () => {
           if (!window.isDestroyed())
             window.webContents.send("dogdog:agentEvent", event);
         },
+        fetch,
+        createToolExecutor(
+          new TraceLibrary(
+            settings.traceRoots ?? [],
+            join(app.getPath("userData"), "trace-index"),
+          ),
+        ),
       );
     } finally {
       if (controller === current) controller = undefined;
@@ -419,7 +415,30 @@ app.whenReady().then(async () => {
       throw new Error("请先停止当前分析，再修改模型设置。");
     conversationMutation = true;
     try {
-      return await store.saveSettings(s);
+      const before = await store.settings();
+      const next = await store.saveSettings(s);
+      if (accessFingerprint(before) !== accessFingerprint(next)) {
+        for (const c of await conversationStore.list()) {
+          c.contextStart = c.messages.length;
+          delete c.accessFingerprint;
+          for (const run of c.runs.filter((r) => r.status === "waiting")) {
+            run.status = "interrupted";
+            run.error = "检索或发送范围已变化，请重新提问。";
+          }
+          for (const source of c.sources) {
+            if (
+              (source.libraryRoot ||
+                before.traceRoots?.some((root) =>
+                  within(root, source.trace.path),
+                )) &&
+              !next.traceRoots?.some((root) => within(root, source.trace.path))
+            )
+              source.active = false;
+          }
+          await conversationStore.save(c);
+        }
+      }
+      return next;
     } finally {
       conversationMutation = false;
     }

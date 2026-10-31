@@ -17,6 +17,7 @@ playwright-report/
 verification/local-*
 # Full request histories contain disposable provider continuation state
 /verification/*-synthetic-conversation.json
+/verification/**/*-synthetic-conversation.json
 
 # Existing smoke screenshots include real local session metadata
 /verification/screenshots/04-dev.png

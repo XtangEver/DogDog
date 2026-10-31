@@ -12,6 +12,8 @@ import { join, resolve } from "node:path";
 import { createRequire } from "node:module";
 const electronBinary = createRequire(import.meta.url)("electron") as string;
 const installedBinary = process.env.DOGDOG_E2E_EXE;
+const screenshotDir =
+  process.env.DOGDOG_SCREENSHOT_DIR || "verification/screenshots";
 
 const row = (type: string, payload: unknown, sec = 0) =>
   JSON.stringify({
@@ -160,6 +162,7 @@ async function send() {
   await page.getByRole("button", { name: "发送并开始诊断" }).click();
 }
 test.beforeEach(async () => {
+  await mkdir(screenshotDir, { recursive: true });
   dir = await mkdtemp(join(tmpdir(), "DogDog-桌面验证-"));
   await mkdir(join(dir, "codex", "sessions"), { recursive: true });
   original = join(dir, "原任务.jsonl");
@@ -250,9 +253,9 @@ for (const protocol of ["openai-responses", "anthropic"] as const) {
         "填写完整接口 URL，按原地址发送，不追加路径；更换地址时需重新填写密钥。",
       ),
     ).toBeVisible();
-    await mkdir("verification/screenshots", { recursive: true });
+    await mkdir(screenshotDir, { recursive: true });
     await page.screenshot({
-      path: `verification/screenshots/protocol-${protocol}-settings.png`,
+      path: `${screenshotDir}/protocol-${protocol}-settings.png`,
     });
     await page.getByRole("button", { name: "关闭", exact: true }).click();
     await importOriginal();
@@ -265,7 +268,7 @@ for (const protocol of ["openai-responses", "anthropic"] as const) {
     );
     expect(requests).toHaveLength(0);
     await page.screenshot({
-      path: `verification/screenshots/protocol-${protocol}-preview.png`,
+      path: `${screenshotDir}/protocol-${protocol}-preview.png`,
     });
     await page.getByRole("button", { name: "发送并开始诊断" }).click();
     await expect(
@@ -300,8 +303,8 @@ for (const protocol of ["openai-responses", "anthropic"] as const) {
 }
 
 test("中文路径下导入、配置、证据诊断、复制、重试对比与重启恢复", async () => {
-  await mkdir("verification/screenshots", { recursive: true });
-  await page.screenshot({ path: "verification/screenshots/01-welcome.png" });
+  await mkdir(screenshotDir, { recursive: true });
+  await page.screenshot({ path: join(screenshotDir, "01-welcome.png") });
   await configure();
   await importOriginal();
   expect(requests).toHaveLength(0);
@@ -316,7 +319,7 @@ test("中文路径下导入、配置、证据诊断、复制、重试对比与�
   expect(requests).toHaveLength(1);
   expect(requests[0].auth).toBe("Bearer DOGDOG-TEST-KEY");
   expect(requests[0].body).not.toHaveProperty("tools");
-  await page.screenshot({ path: "verification/screenshots/02-diagnosis.png" });
+  await page.screenshot({ path: join(screenshotDir, "02-diagnosis.png") });
   await page.getByRole("button", { name: "L7", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("1 test failed");
   await page.getByRole("button", { name: "关闭", exact: true }).click();
@@ -347,7 +350,7 @@ test("中文路径下导入、配置、证据诊断、复制、重试对比与�
     page.getByRole("heading", { name: "这一次，有没有更接近目标？" }),
   ).toBeVisible();
   await expect(page.locator(".outcome")).toHaveText("改善");
-  await page.screenshot({ path: "verification/screenshots/03-comparison.png" });
+  await page.screenshot({ path: join(screenshotDir, "03-comparison.png") });
   expect(await readFile(original, "utf8")).toBe(fixture());
   await app.close();
   await launch();

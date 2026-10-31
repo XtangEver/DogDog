@@ -6,7 +6,8 @@ import {
   writeFile,
   rm,
 } from "node:fs/promises";
-import { join } from "node:path";
+import { join, isAbsolute, resolve } from "node:path";
+import { defaultTraceRoots } from "./access-policy";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { Review, Settings, SaveSettings } from "../shared/types";
@@ -111,6 +112,11 @@ const settingsSchema = z.object({
   maxInputChars: z.number().int().min(5000).max(1000000),
   apiKey: z.string().max(16000).optional(),
   clearKey: z.boolean().optional(),
+  traceRoots: z
+    .array(z.string().trim().min(1).max(4000).refine(isAbsolute))
+    .max(20)
+    .optional(),
+  allowTraceSend: z.boolean().optional(),
 });
 export interface CryptoProvider {
   encrypt(text: string): Promise<string>;
@@ -158,6 +164,8 @@ export class Store {
       model: s?.model ?? "",
       maxInputChars: s?.maxInputChars ?? 60000,
       hasKey: !!s?.encryptedKey,
+      traceRoots: s?.traceRoots ?? defaultTraceRoots(),
+      allowTraceSend: s?.allowTraceSend === true,
     };
   }
   async key(): Promise<string> {
@@ -186,6 +194,20 @@ export class Store {
         model: s.model,
         maxInputChars: s.maxInputChars,
         encryptedKey,
+        traceRoots: [
+          ...new Set(
+            (s.traceRoots ?? old?.traceRoots ?? defaultTraceRoots()).map(
+              (r: string) => resolve(r),
+            ),
+          ),
+        ],
+        allowTraceSend:
+          s.allowTraceSend ??
+          (old?.baseUrl === s.baseUrl &&
+          old?.protocol === s.protocol &&
+          s.traceRoots === undefined
+            ? old?.allowTraceSend === true
+            : false),
       });
       return this.settings();
     });

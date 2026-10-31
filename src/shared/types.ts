@@ -107,6 +107,8 @@ export interface Settings {
   model: string;
   maxInputChars: number;
   hasKey: boolean;
+  traceRoots?: string[];
+  allowTraceSend?: boolean;
 }
 export interface SaveSettings {
   protocol: ModelProtocol;
@@ -115,6 +117,8 @@ export interface SaveSettings {
   maxInputChars: number;
   apiKey?: string;
   clearKey?: boolean;
+  traceRoots?: string[];
+  allowTraceSend?: boolean;
 }
 export interface Preview {
   protocol: ModelProtocol;
@@ -164,7 +168,6 @@ export interface DogDogAPI {
   refreshSource(id: string, sourceId: string): Promise<Conversation>;
   removeSource(id: string, sourceId: string): Promise<Conversation>;
   previewConversation(id: string, text: string): Promise<ConversationPreview>;
-  authorizeConversation(id: string, token: string): Promise<Conversation>;
   sendMessage(id: string, text: string): Promise<Conversation>;
   saveConversationReport(id: string, messageId: string): Promise<Conversation>;
   onAgentEvent(listener: (event: AgentEvent) => void): () => void;
@@ -175,6 +178,7 @@ export interface SourceSnapshot {
   trace: Trace;
   attachedAt: string;
   active: boolean;
+  libraryRoot?: string;
 }
 export interface ToolCall {
   id: string;
@@ -250,9 +254,10 @@ export interface Conversation {
   runs: AgentRun[];
   reports: ConversationReport[];
   grant?: { fingerprint: string; at: string };
+  accessFingerprint?: string;
+  excludedPaths?: string[];
 }
 export interface ConversationPreview {
-  token: string;
   requiresAuthorization: boolean;
   protocol: ModelProtocol;
   endpoint: string;
@@ -269,4 +274,6 @@ export interface AgentEvent {
   messages?: ConversationMessage[];
   run?: AgentRun;
   title?: string;
+  sources?: SourceSnapshot[];
+  toolStatus?: string;
 }

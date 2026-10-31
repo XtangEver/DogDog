@@ -60,7 +60,7 @@ export function ChatApp() {
   const [error, setError] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [preview, setPreview] = useState<ConversationPreview>();
-  const [pending, setPending] = useState("");
+  const [toolStatus, setToolStatus] = useState("");
   const [evidence, setEvidence] = useState<{
     source: SourceSnapshot;
     event: TraceEvent;
@@ -99,6 +99,7 @@ export function ChatApp() {
     () =>
       api.onAgentEvent((event) => {
         if (event.conversationId !== selected.current) return;
+        if (event.toolStatus) setToolStatus(event.toolStatus);
         if (event.type === "delta")
           setC((value) => {
             if (!value || value.id !== event.conversationId) return value;
@@ -115,6 +116,7 @@ export function ChatApp() {
             return {
               ...value,
               title: event.title ?? value.title,
+              sources: event.sources ?? value.sources,
               messages: event.messages!,
               runs: [
                 ...value.runs.filter((r) => r.id !== event.runId),
@@ -141,6 +143,7 @@ export function ChatApp() {
   }
   async function send(value: Conversation, text: string) {
     setBusy(true);
+    setToolStatus("正在思考…");
     setInput("");
     const result = await action(() => api.sendMessage(value.id, text));
     if (result) upsert(result);
@@ -149,23 +152,30 @@ export function ChatApp() {
   }
   async function prepare() {
     const text = input.trim();
-    if (!text || busy) return;
+    if (!text || busy || settingsOpen || preview) return;
     setBusy(true);
-    const prepared = await action(async () => {
-      const value = await ensureConversation(),
-        p = await api.previewConversation(value.id, text);
-      return { value, p };
-    });
-    if (!prepared) {
+    if (!boot?.settings.allowTraceSend) {
+      setSettingsOpen(true);
       setBusy(false);
       return;
     }
-    if (prepared.p.requiresAuthorization) {
-      setPending(text);
-      setPreview(prepared.p);
-      setBusy(false);
-    } else await send(prepared.value, text);
+    await action(async () => send(await ensureConversation(), text));
+    setBusy(false);
   }
+  async function showPreview() {
+    if (!input.trim() || busy) return;
+    setBusy(true);
+    await action(async () =>
+      setPreview(
+        await api.previewConversation(
+          (await ensureConversation()).id,
+          input.trim(),
+        ),
+      ),
+    );
+    setBusy(false);
+  }
+
   function openEvidence(id: string) {
     const match = /^(S\d+):L(\d+)$/.exec(id);
     const source = c?.sources.find((s) => s.id === match?.[1]);
@@ -285,7 +295,7 @@ export function ChatApp() {
           >
             ⚙ 模型设置
           </button>
-          <small>记录保存在本机 · v0.2.0</small>
+          <small>记录保存在本机 · v0.3.0</small>
         </div>
       </aside>
       <main className="chat-main">
@@ -347,7 +357,7 @@ export function ChatApp() {
                   <Dog state="idle" />
                   <h2>每一次协作，都可以成为经验。</h2>
                   <p>
-                    直接聊一个困惑，或放进几份轨迹。
+                    直接提问，我会自主检索本机 Codex 历史。
                     <br />
                     我会查找线索，也会在缺少关键背景时向你询问。
                   </p>
@@ -419,12 +429,12 @@ export function ChatApp() {
               <textarea
                 id="chat-question"
                 value={input}
-                disabled={busy}
+                disabled={busy || settingsOpen || !!preview}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
                   run?.status === "waiting"
                     ? "补充你的回答，狗狗会继续分析…"
-                    : "说说你想讨论什么，轨迹可以随时追加…"
+                    : "直接提问，狗狗会按需检索 Codex 历史…"
                 }
                 rows={3}
                 onKeyDown={(e) => {
@@ -439,11 +449,19 @@ export function ChatApp() {
                 }}
               />
               <div>
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={busy || !input.trim()}
+                  onClick={() => void showPreview()}
+                >
+                  发送预览
+                </button>
                 <small>
                   {run?.status === "waiting"
                     ? "等待你的补充"
                     : busy
-                      ? `${run?.requests.length ?? 0} 次模型请求 · ${run?.tools.length ?? 0} 次工具调用`
+                      ? toolStatus
                       : "Enter 发送 · Shift + Enter 换行"}
                 </small>
                 {busy ? (
@@ -473,7 +491,7 @@ export function ChatApp() {
                 <span>{active.length}</span>
               </div>
               <p>
-                来源可选，也可以一次关联多份。
+                相关轨迹会自动检索并加入证据。
                 <br />
                 原始轨迹始终只读。
               </p>
@@ -548,9 +566,9 @@ export function ChatApp() {
               </div>
               {!active.length && (
                 <p className="chat-source-empty">
-                  暂未关联轨迹
+                  尚未建立证据快照
                   <br />
-                  通用方法也可以直接聊。
+                  提问后会按需检索本机历史。
                 </p>
               )}
             </section>
@@ -586,12 +604,34 @@ export function ChatApp() {
                     <li key={i}>
                       {(
                         {
+                          discover_sessions: "发现会话",
                           list_sources: "查看来源",
                           search_traces: "搜索轨迹",
                           read_trace: "阅读原文",
                           ask_user: "询问背景",
                         } as Record<string, string>
                       )[t.name] || t.name}
+                      {(() => {
+                        try {
+                          const result = JSON.parse(t.result);
+                          return (
+                            <small>
+                              {result.error
+                                ? ` · ${result.error}`
+                                : typeof result.total === "number"
+                                  ? ` · ${result.total} 条匹配${result.nextOffset !== null ? "（可继续翻页）" : ""}`
+                                  : ""}
+                              {result.warnings
+                                ?.slice(0, 2)
+                                .map((warning: string, n: number) => (
+                                  <span key={n}> · {warning}</span>
+                                ))}
+                            </small>
+                          );
+                        } catch {
+                          return null;
+                        }
+                      })()}
                     </li>
                   ))}
                 </ol>
@@ -612,15 +652,21 @@ export function ChatApp() {
             await action(async () => {
               const settings = await api.saveSettings(s);
               setBoot({ ...boot, settings });
+              const conversations = await api.conversations();
+              setAll(conversations);
+              if (c) {
+                const updated = conversations.find((x) => x.id === c.id);
+                if (updated) upsert(updated);
+              }
               setSettingsOpen(false);
             });
           }}
         />
       )}
       {preview && (
-        <Dialog title="确认对话的发送范围" close={() => setPreview(undefined)}>
+        <Dialog title="对话发送预览" close={() => setPreview(undefined)}>
           <p>
-            允许狗狗在此对话中，将下列来源范围内的相关内容按需发送至所选模型。新增来源、刷新快照或更换服务后会重新确认。
+            已配置目录内的相关片段会按需发送；这份预览展示首次请求，后续检索片段可在发送记录查看。
           </p>
           <dl className="preview-info">
             <div>
@@ -635,7 +681,9 @@ export function ChatApp() {
             </div>
             <div>
               <dt>来源范围</dt>
-              <dd>{preview.sourceIds.join("、") || "无轨迹，仅讨论内容"}</dd>
+              <dd>
+                {boot?.settings.traceRoots?.join("；") || "仅手动导入来源"}
+              </dd>
             </div>
             <div>
               <dt>首次请求</dt>
@@ -657,27 +705,6 @@ export function ChatApp() {
           <div className="form-actions">
             <button className="secondary" onClick={() => setPreview(undefined)}>
               返回调整
-            </button>
-            <button
-              className="primary"
-              disabled={busy}
-              onClick={() => {
-                if (!c) return;
-                const value = c,
-                  token = preview.token,
-                  text = pending;
-                setPreview(undefined);
-                setBusy(true);
-                void action(async () => {
-                  const authorized = await api.authorizeConversation(
-                    value.id,
-                    token,
-                  );
-                  await send(authorized, text);
-                }).finally(() => setBusy(false));
-              }}
-            >
-              确认范围并发送
             </button>
           </div>
         </Dialog>

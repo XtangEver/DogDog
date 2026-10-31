@@ -22,6 +22,8 @@ let protocol: ModelProtocol, scenario: string, stage: number;
 let requests: Array<{ body: any; authorization?: string; key?: string }>;
 const binary = createRequire(import.meta.url)("electron") as string;
 const installedBinary = process.env.DOGDOG_E2E_EXE;
+const screenshotDir =
+  process.env.DOGDOG_SCREENSHOT_DIR || "verification/screenshots";
 async function launch() {
   const env = Object.fromEntries(
     Object.entries(process.env).filter(
@@ -56,18 +58,16 @@ async function configure(p: ModelProtocol) {
   await page
     .getByLabel("API Key", { exact: true })
     .fill("DOGDOG-MOCK-ONLY-KEY");
+  await page.getByLabel("允许检索并发送相关片段", { exact: true }).check();
   await page.getByRole("button", { name: "保存配置", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 }
 async function send(text: string, confirm = false) {
   await page.getByLabel("你的问题", { exact: true }).fill(text);
   await page.getByRole("button", { name: "发送 ↗", exact: true }).click();
-  if (confirm) {
-    await expect(
-      page.getByRole("dialog", { name: "确认对话的发送范围" }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: "确认范围并发送" }).click();
-  }
+  await expect(
+    page.getByRole("dialog", { name: "确认对话的发送范围" }),
+  ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "发送 ↗", exact: true }),
   ).toBeVisible();
@@ -84,6 +84,7 @@ async function attach(
   );
 }
 test.beforeEach(async () => {
+  await mkdir(screenshotDir, { recursive: true });
   dir = await mkdtemp(join(tmpdir(), "dogdog-agent-e2e-"));
   await mkdir(join(dir, "codex", "sessions"), { recursive: true });
   await writeFile(join(dir, "任务甲.jsonl"), traceFixture());
@@ -123,6 +124,22 @@ test.beforeEach(async () => {
           toolCall("ask_user", { question: "你希望怎样验收这次改进？" }),
         ];
       else text = "根据补充的验收条件，先运行测试，再检查导出文件。";
+    } else if (scenario === "auto") {
+      const n = stage++;
+      if (n === 0) calls = [toolCall("discover_sessions", { query: "鼠标" })];
+      else if (n === 1) calls = [toolCall("search_traces", { query: "鼠标" })];
+      else if (n === 2)
+        calls = [
+          toolCall("read_trace", { sourceId: "S1", fromLine: 2, toLine: 5 }),
+          toolCall(
+            "read_trace",
+            { sourceId: "S2", fromLine: 2, toLine: 5 },
+            "read-b",
+          ),
+        ];
+      else
+        text =
+          "事实：鼠标移动缓慢由 DPI 过低导致，调整后恢复 [S1:L4] [S2:L4]。";
     } else if (scenario === "compare") {
       const n = stage++;
       if (n === 0) calls = [toolCall("list_sources")];
@@ -248,11 +265,11 @@ for (const p of ["openai-responses", "anthropic", "openai-chat"] as const) {
       page.getByRole("button", { name: "查看证据 S1:L4", exact: true }),
     ).toBeVisible();
     await page.screenshot({
-      path: `verification/screenshots/v02-${p}-conversation.png`,
+      path: `${screenshotDir}/v03-${p}-conversation.png`,
     });
   });
 }
-test("刷新快照保留历史证据、重新授权，移除来源后不发送旧引文", async () => {
+test("刷新快照保留历史证据且不重复授权，移除来源后不发送旧引文", async () => {
   await configure("openai-responses");
   await attach();
   scenario = "compare";
@@ -293,7 +310,6 @@ test("取消保留未完成文本，不自动重试，伪造引用拒绝完整�
   scenario = "delay";
   await page.getByLabel("你的问题").fill("请分析");
   await page.getByRole("button", { name: "发送 ↗", exact: true }).click();
-  await page.getByRole("button", { name: "确认范围并发送" }).click();
   await expect(page.locator(".chat-message-assistant").last()).toContainText(
     "正在生成的部分回答",
   );
@@ -325,35 +341,9 @@ test("取消保留未完成文本，不自动重试，伪造引用拒绝完整�
     page.getByRole("button", { name: "保存为报告", exact: true }),
   ).toHaveCount(0);
 });
-test("超预算阻止发送，旧授权票据不能覆盖新增来源", async () => {
+test("超预算与未配置发送权限均阻止请求", async () => {
   await configure("openai-responses");
   const c = await page.evaluate(() => window.dogdog.createConversation());
-  const preview = await page.evaluate(
-    (id) => window.dogdog.previewConversation(id, "问题"),
-    c.id,
-  );
-  await app.evaluate(
-    ({ dialog }, file) => {
-      dialog.showOpenDialog = async () => ({
-        canceled: false,
-        filePaths: [file],
-      });
-    },
-    join(dir, "任务甲.jsonl"),
-  );
-  await page.evaluate((id) => window.dogdog.attachSources(id), c.id);
-  const rejected = await page.evaluate(
-    async ({ id, token }) => {
-      try {
-        await window.dogdog.authorizeConversation(id, token);
-        return false;
-      } catch {
-        return true;
-      }
-    },
-    { id: c.id, token: preview.token },
-  );
-  expect(rejected).toBe(true);
   const oversize = await page.evaluate(async (id) => {
     try {
       await window.dogdog.previewConversation(id, "大".repeat(70000));
@@ -363,5 +353,125 @@ test("超预算阻止发送，旧授权票据不能覆盖新增来源", async ()
     }
   }, c.id);
   expect(oversize).toBe(true);
+  const rejected = await page.evaluate(async (id) => {
+    const { settings } = await window.dogdog.boot();
+    await window.dogdog.saveSettings({ ...settings, allowTraceSend: false });
+    try {
+      await window.dogdog.sendMessage(id, "未授权请求");
+      return false;
+    } catch {
+      return true;
+    }
+  }, c.id);
+  expect(rejected).toBe(true);
   expect(requests).toHaveLength(0);
+});
+
+for (const p of ["openai-responses", "anthropic", "openai-chat"] as const) {
+  test(`${p} 未关联会话自动检索当前及归档轨迹，Enter、新讨论与重启不弹确认`, async () => {
+    await writeFile(
+      join(dir, "codex", "sessions", "noise.jsonl"),
+      traceFixture("noise", "UNRELATED_NOISE_MARKER"),
+    );
+    await writeFile(
+      join(dir, "codex", "sessions", "mouse.jsonl"),
+      traceFixture("mouse", "鼠标移动缓慢，DPI 过低，调整后恢复"),
+    );
+    await mkdir(join(dir, "codex", "archived_sessions"));
+    await writeFile(
+      join(dir, "codex", "archived_sessions", "verify.jsonl"),
+      traceFixture("verify", "鼠标复测：DPI 调整后恢复"),
+    );
+    await configure(p);
+    scenario = "auto";
+    stage = 0;
+    await page.getByLabel("你的问题").fill("之前鼠标移动缓慢如何解决？");
+    await page.getByRole("button", { name: "发送预览", exact: true }).click();
+    await expect(
+      page.getByRole("dialog", { name: "对话发送预览" }),
+    ).toBeVisible();
+    expect(requests).toHaveLength(0);
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "关闭", exact: true })
+      .click();
+    await page.getByLabel("你的问题").press("Enter");
+    await expect(
+      page.getByRole("button", { name: "查看证据 S1:L4", exact: true }),
+    ).toBeVisible();
+    expect(JSON.stringify(requests)).not.toContain("UNRELATED_NOISE_MARKER");
+    await expect(page.locator(".chat-source-list article")).toHaveCount(2);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "查看证据 S2:L4", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toContainText("鼠标");
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "关闭", exact: true })
+      .click();
+    await page.screenshot({
+      path: `${screenshotDir}/v03-${p}-automatic.png`,
+    });
+    scenario = "generic";
+    await send("继续讨论");
+    await page.getByRole("button", { name: "新建讨论" }).click();
+    await send("新话题也直接发送");
+    await app.close();
+    await launch();
+    await send("重启后继续");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    expect(
+      (await page.evaluate(() => window.dogdog.boot())).settings.allowTraceSend,
+    ).toBe(true);
+  });
+}
+
+test("目录撤权清理模型上下文，改服务必须重新确认发送权限", async () => {
+  await configure("openai-responses");
+  await writeFile(
+    join(dir, "codex", "sessions", "mouse.jsonl"),
+    traceFixture("mouse", "鼠标 DPI_FIX_PRIVATE"),
+  );
+  await writeFile(
+    join(dir, "codex", "sessions", "mouse2.jsonl"),
+    traceFixture("mouse2", "鼠标 DPI_FIX_PRIVATE"),
+  );
+  scenario = "auto";
+  stage = 0;
+  await send("鼠标如何修复");
+  await expect(
+    page.getByRole("button", { name: "查看证据 S1:L4", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "模型设置" }).click();
+  await page.getByLabel("Codex 轨迹目录", { exact: true }).fill("");
+  await expect(page.getByLabel("允许检索并发送相关片段")).not.toBeChecked();
+  await page.getByLabel("允许检索并发送相关片段").check();
+  await page.getByRole("button", { name: "保存配置", exact: true }).click();
+  scenario = "generic";
+  await send("从剩余范围继续");
+  expect(JSON.stringify(requests.at(-1))).not.toContain("DPI_FIX_PRIVATE");
+  expect(JSON.stringify(requests.at(-1))).not.toContain("鼠标移动缓慢由");
+  await page
+    .getByRole("button", { name: "查看证据 S1:L4", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("历史快照");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "关闭", exact: true })
+    .click();
+  await page.getByRole("button", { name: "模型设置" }).click();
+  await page
+    .getByLabel("服务地址", { exact: true })
+    .fill(url + "/new-responses");
+  await expect(page.getByLabel("允许检索并发送相关片段")).not.toBeChecked();
+  await page.getByRole("button", { name: "保存配置", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const count = requests.length;
+  await page.getByLabel("你的问题").fill("发送应被阻止");
+  await page.getByLabel("你的问题").press("Enter");
+  await expect(
+    page.getByRole("dialog", { name: "选择狗狗的协作模型" }),
+  ).toBeVisible();
+  expect(requests).toHaveLength(count);
 });

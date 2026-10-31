@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-31T01:37:50.875Z",
+  "protocol": "openai-responses",
+  "syntheticOnly": true,
+  "privateTraceSent": false,
+  "checks": [
+    {
+      "name": "自然提问自动检索当前与归档轨迹",
+      "requests": 3,
+      "tools": [
+        "discover_sessions",
+        "search_traces",
+        "read_trace",
+        "read_trace"
+      ],
+      "evidenceIds": [
+        "S2:L4",
+        "S1:L4",
+        "S2:L5",
+        "S1:L5"
+      ]
+    },
+    {
+      "name": "重启恢复并直接 Enter 继续，无重复确认"
+    }
+  ],
+  "success": true,
+  "originalSettingsUnchanged": true,
+  "sourceFilesUnchanged": true,
+  "model": "GLM-5.3",
+  "endpoint": "https://open.bigmodel.cn/api/v1/responses"
+}

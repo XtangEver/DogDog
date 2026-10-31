@@ -544,3 +544,8 @@
     font-size: 9px;
   }
 }
+
+.chat-composer > div > button.secondary {
+  padding: 6px 10px;
+  font-size: 11px;
+}

@@ -88,7 +88,7 @@ const result = {
 const record = async (name, details = {}) => {
   result.checks.push({ name, ...details });
   await writeFile(
-    "verification/v02-real-agent.json",
+    "verification/v03-legacy-real-agent.json",
     JSON.stringify(result, null, 2),
   );
   console.log(JSON.stringify({ step: name, ...details }));
@@ -133,8 +133,6 @@ async function close() {
 async function send(text, confirm = false) {
   await page.getByLabel("你的问题", { exact: true }).fill(text);
   await page.getByRole("button", { name: "发送 ↗", exact: true }).click();
-  if (confirm)
-    await page.getByRole("button", { name: "确认范围并发送" }).click();
   await expect(
     page.getByRole("button", { name: "发送 ↗", exact: true }),
   ).toBeVisible({ timeout: 12 * 120000 + 30000 });
@@ -146,6 +144,10 @@ async function send(text, confirm = false) {
 }
 try {
   await launch();
+  await page.getByRole("button", { name: "模型设置" }).click();
+  await page.getByLabel("允许检索并发送相关片段").check();
+  await page.getByRole("button", { name: "保存配置", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   let c = await send(
     "作为 AI 协作顾问，给我两条关于验收标准的通用建议，明确标识为通用建议。",
     true,
@@ -196,7 +198,9 @@ try {
     .last()
     .click();
   await expect(page.locator(".chat-report-panel > button")).toHaveCount(1);
-  await page.screenshot({ path: "verification/screenshots/v02-real-glm.png" });
+  await page.screenshot({
+    path: "verification/screenshots/v03-legacy-real-glm.png",
+  });
   const count = c.messages.length;
   await close();
   await launch();
@@ -205,7 +209,7 @@ try {
     throw new Error("真实讨论或报告重启恢复失败。");
   await record("真实讨论与报告恢复");
   await writeFile(
-    "verification/v02-real-synthetic-conversation.json",
+    "verification/v03-legacy-real-synthetic-conversation.json",
     JSON.stringify(c, null, 2),
   );
   result.sourceFilesUnchanged = (
@@ -228,7 +232,7 @@ try {
       .catch(() => []);
     if (conversations[0])
       await writeFile(
-        "verification/v02-real-synthetic-conversation.json",
+        "verification/v03-legacy-real-synthetic-conversation.json",
         JSON.stringify(conversations[0], null, 2),
       );
   }
@@ -239,7 +243,7 @@ try {
     before && after ? hash(before) === hash(after) : before === after;
   result.success = result.success && result.originalSettingsUnchanged;
   await writeFile(
-    "verification/v02-real-agent.json",
+    "verification/v03-legacy-real-agent.json",
     JSON.stringify(result, null, 2),
   );
   if (!resolve(dir).startsWith(prefix)) throw new Error("Unsafe cleanup path");

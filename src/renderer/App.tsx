@@ -1480,6 +1480,9 @@ export function SettingsModal({
   const [max, setMax] = useState(settings.maxInputChars);
   const [clear, setClear] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [roots, setRoots] = useState((settings.traceRoots ?? []).join("\n"));
+  const [allowSend, setAllowSend] = useState(settings.allowTraceSend ?? false);
+  const changeScope = () => setAllowSend(false);
   return (
     <Modal title="选择狗狗的协作模型" close={close}>
       <p>选择接口协议，并填写服务提供的完整请求 URL。</p>
@@ -1494,6 +1497,11 @@ export function SettingsModal({
             maxInputChars: max,
             apiKey: apiKey || undefined,
             clearKey: clear,
+            traceRoots: roots
+              .split(/\r?\n/)
+              .map((r) => r.trim())
+              .filter(Boolean),
+            allowTraceSend: allowSend,
           }).finally(() => {
             setKey("");
             setSaving(false);
@@ -1505,7 +1513,10 @@ export function SettingsModal({
           <select
             aria-label="接口协议"
             value={protocol}
-            onChange={(e) => setProtocol(e.target.value as ModelProtocol)}
+            onChange={(e) => {
+              setProtocol(e.target.value as ModelProtocol);
+              changeScope();
+            }}
           >
             {Object.entries(protocolLabels).map(([value, label]) => (
               <option key={value} value={value}>
@@ -1521,7 +1532,10 @@ export function SettingsModal({
             required
             type="url"
             value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
+            onChange={(e) => {
+              setBaseUrl(e.target.value);
+              changeScope();
+            }}
             placeholder={
               protocol === "anthropic"
                 ? "https://your-provider.example/v1/messages"
@@ -1584,6 +1598,30 @@ export function SettingsModal({
         <small className="field-help">
           包含诊断指令与轨迹，不等同于 token 数；默认
           60000，请根据模型容量调整。
+        </small>
+        <label>
+          Codex 轨迹目录（每行一个绝对路径）
+          <textarea
+            aria-label="Codex 轨迹目录"
+            rows={3}
+            value={roots}
+            onChange={(e) => {
+              setRoots(e.target.value);
+              changeScope();
+            }}
+          />
+        </label>
+        <label className="checkbox">
+          <input
+            aria-label="允许检索并发送相关片段"
+            type="checkbox"
+            checked={allowSend}
+            onChange={(e) => setAllowSend(e.target.checked)}
+          />
+          允许检索上述目录，并将相关片段、手动导入轨迹及讨论内容发送至当前服务
+        </label>
+        <small className="field-help">
+          授权保存在本机，适用于新讨论和重启；变更目录或服务后请重新勾选。原始轨迹只读，可随时撤销；发送前可主动查看预览。
         </small>
         <div className="data-path">
           <strong>本地复盘目录</strong>
