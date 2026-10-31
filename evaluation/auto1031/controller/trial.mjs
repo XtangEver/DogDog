@@ -11,13 +11,15 @@ import { runRole, readTranscript } from "./roles.mjs";
 import { harvest, extractProgressLog, detectCheckpoint, redact } from "./harvest.mjs";
 import { launchDogDog, stopDogDog, sha256File } from "./launch.mjs";
 import { startIntervalCapture, captureScreen } from "./screen.mjs";
-import { cleanupAll } from "./procs.mjs";
+import { cleanupAll, spawnTracked } from "./procs.mjs";
 import { timeline, nowIso, repo } from "./state.mjs";
 import { finalizeResult, validateRunRoot } from "./validate.mjs";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export async function readJson(path, fallback) {
+// MUST stay synchronous: callers use it directly (an async version returns
+// Promises whose .ready/.commit fields are silently undefined).
+export function readJson(path, fallback) {
   try {
     return JSON.parse(readFileSync(path, "utf8"));
   } catch {
@@ -32,6 +34,41 @@ function appendEvent(runRootDir, ev) {
     redact(JSON.stringify({ ts: nowIso(), ...ev })) + "\n",
     { flag: "a" },
   );
+}
+
+// Long-running mocks are started by the CONTROLLER (SETUP.md's "管理员"),
+// never by the setup session — claude's Bash kills background children on its
+// own time limit and when the session exits, which orphaned mocks in smoke.
+async function startMockFromRequest({ runRootDir, caseId, attempt, stagingDir, mockRequest }) {
+  if (!mockRequest?.kind) return null;
+  const outDir = mockRequest.outDir && !/^[a-z]:/i.test(mockRequest.outDir)
+    ? join(stagingDir, mockRequest.outDir)
+    : (mockRequest.outDir ?? join(stagingDir, "service"));
+  mkdirSync(outDir, { recursive: true });
+  let script, args;
+  if (mockRequest.kind === "desktop-service") {
+    const planPath = mockRequest.planPath?.replaceAll("/", "\\");
+    if (!planPath || !existsSync(planPath)) throw new Error("mockRequest.planPath missing: " + planPath);
+    script = join(repo, "evaluation", "fixtures", "_support", "desktop-service.mjs");
+    args = [script, "--plan", planPath, "--out", outDir, "--port", "0"];
+  } else {
+    script = join(repo, "evaluation", "tools", "mock-service.mjs");
+    args = [script, "--out", outDir, "--mode", mockRequest.mode ?? "text", "--port", "0"];
+  }
+  spawnTracked("mocks", {
+    cmd: process.execPath, args, cwd: repo,
+    label: `${caseId}:mock`, trialId: caseId,
+  });
+  const statusPath = join(outDir, "status.json");
+  for (let i = 0; i < 20; i++) {
+    const st = readJson(statusPath, null);
+    if (st?.url) {
+      appendEvent(runRootDir, { caseId, attempt, kind: "mock-started", url: st.url, mode: st.mode });
+      return { statusPath, status: st };
+    }
+    await sleep(500);
+  }
+  throw new Error("mock did not report status.json within 10s");
 }
 
 // Mock services are spawned by the setup role's Bash (not in our registry).
@@ -95,10 +132,10 @@ function setupPrompt({ caseId, setupPkgDir, stagingDir, exePath, group, phase, l
       : `本案例使用本机 mock 服务（合成占位密钥 sk-test-placeholder），不要使用真实密钥。`;
   const phaseA = `阶段A（DogDog 尚未启动）：
 1. 阅读 ${join(stagingDir, "SETUP.md")}（基础 staging 已由控制器生成：codex 输入、launch-env.json、brief.json、fixture-hashes.json 已就位）。跳过其中任何"运行 prepare/prepare-package"的步骤——staging 已存在，不得重复生成。
-2. 用本包（${setupPkgDir}）中的夹具与工具执行 SETUP.md 其余全部专有步骤：seed、规模生成器、junction/目录构造、mock 服务（node tools/mock-service.mjs --out <staging>/service --mode <按SETUP.md> --port 0，或 fixtures/_support/desktop-service.mjs --plan <按SETUP.md> --out <全新目录> --port 0）等。生成的工作副本要更新 ${join(stagingDir, "fixture-hashes.json")}（保留原夹具不动）。
-3. 不要自己启动 DogDog。写 ${join(stagingDir, "launch-request.json")}：{"ready": true, "needPostLaunchSetup": <bool——SETUP.md 是否要求管理员在应用启动后经可见 UI 预配置（如服务地址/密钥/轨迹目录授权/勾选允许检索并发送相关片段）>, "mockStatusJson": "<若启动了mock，其status.json绝对路径，否则null>"}。
+2. 用本包（${setupPkgDir}）中的夹具与工具执行 SETUP.md 其余全部专有步骤中**可在文件侧完成的部分**：seed、规模生成器、junction/目录构造等。生成的工作副本要更新 ${join(stagingDir, "fixture-hashes.json")}（保留原夹具不动）。绝不要自己启动任何长驻进程/服务器（mock、desktop-service 等）——你的会话结束时它们会被杀死，这类服务由控制器作为管理员启动（见第3步 mockRequest）。SETUP.md 中"管理员执行 desktop-service/mock-service"的步骤即属此类，只需按第3步申报。
+3. 不要自己启动 DogDog。写 ${join(stagingDir, "launch-request.json")}：{"ready": true, "needPostLaunchSetup": <bool——SETUP.md 是否要求管理员在应用启动后经可见 UI 预配置（如服务地址/密钥/轨迹目录授权/勾选允许检索并发送相关片段）>, "mockRequest": <按 SETUP.md 需要本机 mock 时为 {"kind":"desktop-service","planPath":"<本包内该案例 mock-plan.json 的绝对路径>"} 或 {"kind":"mock-service","mode":"<SETUP.md 指定的 mode>"}，控制器会在 staging/service 下启动并回填 URL；不需要 mock 则为 null>}。
 4. 写 ${join(stagingDir, "admin-plan.json")}：若案例存在中途管理员动作（杀进程/重启/中途加文件等），按触发器列出 [{"trigger":"<如 restart-after-first-answer>", "actions":[{"type":"kill-app"|"restart-app"|"copy-file"|"write-file"|"wait-ms", ...}]}]；无则为 []。
-5. 写 ${launchInfoPath}：模拟用户需要知道的启动信息 {"appStarted": false, "exe": "${exePath}", "mockServiceUrl": <null或status.json的url>, "mockMode": <null或模式>, "profileDir": "<staging>/profile", "traceRoots": ["<staging>/codex/sessions","<staging>/codex/archived_sessions"], "notes": "<给模拟用户的注意事项，例如：应用已/未预配置；设置勿动/需自行配置等>"}。不要在 launch-info 或任何交接文件中写入案例验收信息或密钥明文。`;
+5. 写 ${launchInfoPath}：模拟用户需要知道的启动信息 {"appStarted": false, "exe": "${exePath}", "mockServiceUrl": null（控制器启动 mock 后回填）, "mockMode": <按SETUP.md的模式或null>, "profileDir": "<staging>/profile", "traceRoots": ["<staging>/codex/sessions","<staging>/codex/archived_sessions"], "notes": "<给模拟用户的注意事项，例如：应用已/未预配置；设置勿动/需自行配置等>"}。不要在 launch-info 或任何交接文件中写入案例验收信息或密钥明文。`;
   const phaseB = `阶段B（DogDog 已启动，PID 见 ${join(stagingDir, "process.json")}）：
 按 SETUP.md 中要求的应用内预配置，通过 windows-mcp 在可见 UI 上完成（模型设置 → 接口协议/服务地址/模型名/API Key/轨迹目录/允许检索并发送相关片段 → 保存配置）。${keyNote}
 完成后更新 ${launchInfoPath} 的 appStarted=true 与 notes（说明已预配置内容，不含密钥），并写 ${join(stagingDir, "setup-postlaunch.json")} 记录你做了什么（不含密钥明文）。不要做 SETUP.md 之外的任何配置，不要开始用户对话。`;
@@ -303,7 +340,19 @@ export async function runTrial({
     const launchReq = readJson(join(stagingDir, "launch-request.json"), null);
     if (!launchReq?.ready)
       throw new Error(`setup-A not ready (exit=${setupARes.exitCode})`);
-    mockStatusJson = launchReq.mockStatusJson ?? null;
+    if (launchReq.mockRequest) {
+      const m = await startMockFromRequest({
+        runRootDir, caseId, attempt, stagingDir,
+        mockRequest: launchReq.mockRequest,
+      });
+      mockStatusJson = m.statusPath;
+      const li = readJson(launchInfoPath, {});
+      li.mockServiceUrl = m.status.url;
+      li.mockMode = m.status.mode ?? null;
+      writeFileSync(launchInfoPath, JSON.stringify(li, null, 2), "utf8");
+    } else {
+      mockStatusJson = launchReq.mockStatusJson ?? null;
+    }
     harvest({
       transcriptPath: join(setupADir, "setup.jsonl"),
       screenshotDir: shotsDir,

@@ -34,7 +34,7 @@
 ## 逐案流水线（trial.mjs runTrial）
 
 1. `prepare`（cli.mjs）→ 全新 staging（codex 输入、launch-env.json、brief.json、fixture-hashes.json、SETUP.md）。
-2. **setup-A**（25min 上限）：执行 SETUP.md 专有步骤（seed/生成器/junction/mock 启动），写 `launch-request.json` / `admin-plan.json` / `launch-info.json`。real 组经可见 UI 配置服务时，密钥只由该角色从 env 读入输入框，永不回显、永不落盘。
+2. **setup-A**（25min 上限）：执行 SETUP.md 专有步骤的文件侧部分（seed/生成器/junction），写 `launch-request.json`（含 `mockRequest` 申报）/ `admin-plan.json` / `launch-info.json`。**长驻 mock 服务由控制器（SETUP.md 中的"管理员"）按 `mockRequest` 启动**——setup 会话的 Bash 后台子进程会随会话结束/时限被杀，不可承载长驻服务。real 组经可见 UI 配置服务时，密钥只由该角色从 env 读入输入框，永不回显、永不落盘。
 3. **launch**：控制器启动 DogDog（唯一启动点），记录 PID/exe/asar 哈希。
 4. **setup-B**（按需）：应用内预配置（服务地址/密钥/轨迹目录授权）。
 5. **runner 回合 1..8**：每回合 = 全新 claude 会话 + 上回合 PROGRESS LOG 逐字携带；`CHECKPOINT: <名称>` 触发控制器按 admin-plan 确定性执行（杀灭→confirmExited→重启→复制文件→等待）；预算 `stopAfterMs` 跨回合累计、`maxUserTurns` 由 runner 自律；45s 定时截图。
