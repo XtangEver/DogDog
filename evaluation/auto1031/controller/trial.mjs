@@ -128,14 +128,14 @@ function runnerPrompt({ brief, launchInfo, remainingMs, maxUserTurns, priorLogs,
 function setupPrompt({ caseId, setupPkgDir, stagingDir, exePath, group, phase, launchInfoPath }) {
   const keyNote =
     group === "real"
-      ? `本案例使用真实被测模型服务。真实 API Key 已在你的进程环境变量 GLM_API_KEY 中（机器级已授权、临时有效）。当需要通过 UI 配置 API Key 时，用 Bash 读取该环境变量的值并输入到界面输入框；绝不要把该值写进你的任何输出文本、报告或文件。`
+      ? `本案例使用真实被测模型服务：接口协议 OpenAI Responses、模型名 GLM-5.3。服务地址必须填完整请求端点 https://open.bigmodel.cn/api/v1/responses —— 产品按原样使用该地址、不会自动拼接协议路径；填裸基址（如 https://open.bigmodel.cn/api/v1）会导致每次请求立即失败。真实 API Key 已在你的进程环境变量 GLM_API_KEY 中（机器级已授权、临时有效）。当需要通过 UI 配置 API Key 时，用 Bash 读取该环境变量的值并输入到界面输入框；绝不要把该值写进你的任何输出文本、报告或文件。`
       : `本案例使用本机 mock 服务（合成占位密钥 sk-test-placeholder），不要使用真实密钥。`;
   const phaseA = `阶段A（DogDog 尚未启动）：
 1. 阅读 ${join(stagingDir, "SETUP.md")}（基础 staging 已由控制器生成：codex 输入、launch-env.json、brief.json、fixture-hashes.json 已就位）。跳过其中任何"运行 prepare/prepare-package"的步骤——staging 已存在，不得重复生成。
 2. 用本包（${setupPkgDir}）中的夹具与工具执行 SETUP.md 其余全部专有步骤中**可在文件侧完成的部分**：seed、规模生成器、junction/目录构造等。生成的工作副本要更新 ${join(stagingDir, "fixture-hashes.json")}（保留原夹具不动）。绝不要自己启动任何长驻进程/服务器（mock、desktop-service 等）——你的会话结束时它们会被杀死，这类服务由控制器作为管理员启动（见第3步 mockRequest）。SETUP.md 中"管理员执行 desktop-service/mock-service"的步骤即属此类，只需按第3步申报。
 3. 不要自己启动 DogDog。写 ${join(stagingDir, "launch-request.json")}：{"ready": true, "needPostLaunchSetup": <bool——SETUP.md 是否要求管理员在应用启动后经可见 UI 预配置（如服务地址/密钥/轨迹目录授权/勾选允许检索并发送相关片段）>, "mockRequest": <按 SETUP.md 需要本机 mock 时为 {"kind":"desktop-service","planPath":"<本包内该案例 mock-plan.json 的绝对路径>"} 或 {"kind":"mock-service","mode":"<SETUP.md 指定的 mode>","endpointPath":"<该案例协议对应的请求路径 /responses|/chat|/messages 之一，按 SETUP.md>"}，控制器会在 staging/service 下启动并回填完整请求 URL（含协议路径）；不需要 mock 则为 null>}。
 4. 写 ${join(stagingDir, "admin-plan.json")}：若案例存在中途管理员动作（杀进程/重启/中途加文件等），按触发器列出 [{"trigger":"<如 restart-after-first-answer>", "actions":[{"type":"kill-app"|"restart-app"|"copy-file"|"write-file"|"wait-ms", ...}]}]；无则为 []。
-5. 写 ${launchInfoPath}：模拟用户需要知道的启动信息 {"appStarted": false, "exe": "${exePath}", "mockServiceUrl": null（控制器启动 mock 后回填为完整请求 URL，含协议路径；模拟用户配置服务地址时原样使用该 URL）, "mockMode": <按SETUP.md的模式或null>, "profileDir": "<staging>/profile", "traceRoots": ["<staging>/codex/sessions","<staging>/codex/archived_sessions"], "notes": "<给模拟用户的注意事项，例如：应用已/未预配置；设置勿动/需自行配置等>"}。不要在 launch-info 或任何交接文件中写入案例验收信息或密钥明文。`;
+5. 写 ${launchInfoPath}：模拟用户需要知道的启动信息 {"appStarted": false, "exe": "${exePath}", "mockServiceUrl": null（控制器启动 mock 后回填为完整请求 URL，含协议路径；模拟用户配置服务地址时原样使用该 URL）, "mockMode": <按SETUP.md的模式或null>, "profileDir": "<staging>/profile", "traceRoots": ["<staging>/codex/sessions","<staging>/codex/archived_sessions"], "notes": "<给模拟用户的注意事项，例如：应用已/未预配置；设置勿动/需自行配置等。真实模型组必须在 notes 写明接口协议、完整服务端点 URL（含协议路径，如 https://open.bigmodel.cn/api/v1/responses）与模型名，供模拟用户原样填入；产品不拼接路径，绝不要在 notes 写裸基址>"}。不要在 launch-info 或任何交接文件中写入案例验收信息或密钥明文。`;
   const phaseB = `阶段B（DogDog 已启动，PID 见 ${join(stagingDir, "process.json")}）：
 按 SETUP.md 中要求的应用内预配置，通过 windows-mcp 在可见 UI 上完成（模型设置 → 接口协议/服务地址/模型名/API Key/轨迹目录/允许检索并发送相关片段 → 保存配置）。${keyNote}
 完成后更新 ${launchInfoPath} 的 appStarted=true 与 notes（说明已预配置内容，不含密钥），并写 ${join(stagingDir, "setup-postlaunch.json")} 记录你做了什么（不含密钥明文）。不要做 SETUP.md 之外的任何配置，不要开始用户对话。`;
