@@ -511,8 +511,22 @@ export async function runTrial({
           adminPlan.find(
             (p) => checkpoint.includes(p.trigger) || String(p.trigger).includes(checkpoint),
           ) ?? (adminPlan.length === 1 ? adminPlan[0] : null);
-        if (!entry)
-          throw new Error(`checkpoint "${checkpoint}" has no admin-plan entry`);
+        if (!entry) {
+          // The runner asked for an admin action this case never staged (e.g.
+          // "please confirm the model settings" at a designed in-app
+          // confirmation gate). That is a runner-level question, not a
+          // controller error: echo a no-op and let the next runner turn
+          // self-serve in the UI instead of burning the attempt before
+          // reviewer judgment (round-0 DD-02-01).
+          appendEvent(runRootDir, {
+            caseId, attempt, kind: "checkpoint-unmatched", text: checkpoint.slice(0, 160),
+          });
+          adminEcho = [
+            ...adminEcho,
+            `[管理员] 本案例没有与「${checkpoint.slice(0, 80)}」对应的编排动作。凡真实用户能在应用内自行完成的操作（如设置填写与确认、重试、更换入口）都由你自己完成；不要假设任何人已代为完成，完成后继续任务并如实报告。`,
+          ];
+          continue;
+        }
         appendEvent(runRootDir, { caseId, attempt, kind: "checkpoint", name: checkpoint.slice(0, 120), trigger: String(entry.trigger) });
         const out = await executeAdminActions({
           actions: entry.actions,
