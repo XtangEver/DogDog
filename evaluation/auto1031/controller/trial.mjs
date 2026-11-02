@@ -3,7 +3,7 @@
 //   → runner turn 1..n ⟷ admin checkpoints → post-trial audit
 //   → visual reviewer (optional) → reviewer → finalize + validate-run → record
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, copyFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, isAbsolute } from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { prepare } from "../../tools/cli.mjs";
@@ -215,15 +215,40 @@ async function executeAdminActions({ actions, stagingDir, exePath, dogdog, label
       });
       done.push(`restart-app pid=${dogdog.pid}`);
     } else if (a.type === "copy-file") {
-      const from = join(stagingDir, a.from);
-      const to = join(stagingDir, a.to);
+      // Setup-role sessions have written both {from,to} and {src,dest}
+      // spellings, and both staging-relative and absolute paths. Absolute
+      // paths must NOT be joined onto stagingDir (that produced
+      // "staging\D:\..." phantom paths); they are used as-is, bounded to
+      // staging or the frozen fixture root.
+      const rawFrom = a.from ?? a.src;
+      const rawTo = a.to ?? a.dest;
+      if (typeof rawFrom !== "string" || typeof rawTo !== "string")
+        throw new Error(`copy-file needs from/src and to/dest strings: ${JSON.stringify(a).slice(0, 200)}`);
+      const from = isAbsolute(rawFrom) ? rawFrom : join(stagingDir, rawFrom);
+      const to = isAbsolute(rawTo) ? rawTo : join(stagingDir, rawTo);
+      const fixtureRoot = join(repo, "evaluation", "fixtures");
+      const inside = (p, root) => {
+        const rel = relative(root, p);
+        return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+      };
+      if (!inside(from, stagingDir) && !inside(from, fixtureRoot))
+        throw new Error(`copy-file src outside staging/fixtures: ${rawFrom}`);
+      if (!inside(to, stagingDir))
+        throw new Error(`copy-file dest outside staging: ${rawTo}`);
+      mkdirSync(join(to, ".."), { recursive: true });
       copyFileSync(from, to);
-      done.push(`copy ${a.from}→${a.to} sha=${sha256File(to).slice(0, 12)}`);
+      done.push(`copy ${rawFrom}→${rawTo} sha=${sha256File(to).slice(0, 12)}`);
     } else if (a.type === "write-file") {
-      const to = join(stagingDir, a.path);
+      const rawTo = a.path ?? a.to ?? a.dest;
+      if (typeof rawTo !== "string")
+        throw new Error(`write-file needs a path string: ${JSON.stringify(a).slice(0, 200)}`);
+      const to = isAbsolute(rawTo) ? rawTo : join(stagingDir, rawTo);
+      const relTo = relative(stagingDir, to);
+      if (relTo.startsWith("..") || isAbsolute(relTo))
+        throw new Error(`write-file dest outside staging: ${rawTo}`);
       mkdirSync(join(to, ".."), { recursive: true });
       writeFileSync(to, a.content ?? "", "utf8");
-      done.push(`write ${a.path} sha=${sha256File(to).slice(0, 12)}`);
+      done.push(`write ${rawTo} sha=${sha256File(to).slice(0, 12)}`);
     } else if (a.type === "wait-ms") {
       await sleep(Math.min(a.ms ?? 1000, 30000));
       done.push(`wait ${a.ms ?? 1000}ms`);
