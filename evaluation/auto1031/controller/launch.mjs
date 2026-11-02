@@ -29,6 +29,27 @@ export function buildDogdogEnv(launchEnvPath) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Deterministic window geometry: maximize the main window after launch so the
+// settings dialog's save control is not viewport-truncated (burned DD-03-04a1,
+// DD-03-05a1, DD-04-06a3). Best-effort: never fails the launch.
+async function maximizeMainWindow(pid) {
+  try {
+    const out = execFileSync(
+      "powershell",
+      [
+        "-NoProfile",
+        "-Command",
+        `$p = Get-Process -Id ${pid} -ErrorAction Stop; $h = $p.MainWindowHandle; if ($h -ne 0) { Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);' -Name Win -Namespace Native; [Native.Win]::ShowWindow($h, 3) | Out-Null; 'maximized' } else { 'no-handle' }`,
+      ],
+      { encoding: "utf8", timeout: 15000 },
+    ).trim();
+    await sleep(1000); // let the resize settle before UI automation starts
+    return out;
+  } catch (e) {
+    return "maximize-failed:" + String(e.message ?? e).slice(0, 80);
+  }
+}
+
 async function waitForMainWindow(pid, timeoutMs = 90000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -80,6 +101,7 @@ export async function launchDogDog({
   } catch (e) {
     titleError = String(e.message ?? e);
   }
+  const maximize = titleError ? "skipped-no-window" : await maximizeMainWindow(pid);
   const record = {
     pid,
     exe: exePath,
@@ -93,6 +115,7 @@ export async function launchDogDog({
     })(),
     windowTitle: title,
     titleError,
+    windowMaximize: maximize,
     startedAt: nowIso(),
     launchEnv: launchEnvPath,
   };

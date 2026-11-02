@@ -139,6 +139,7 @@ function setupPrompt({ caseId, setupPkgDir, stagingDir, exePath, group, phase, l
   const phaseB = `阶段B（DogDog 已启动，PID 见 ${join(stagingDir, "process.json")}）：
 按 SETUP.md 中要求的应用内预配置，通过 windows-mcp 在可见 UI 上完成（模型设置 → 接口协议/服务地址/模型名/API Key/轨迹目录/允许检索并发送相关片段 → 保存配置）。${keyNote}
 保存后必须做持久化核验：用只读方式检查 ${join(stagingDir, "profile", "reviews", "settings.json")}（DogDog 的隔离 userData 即 ${join(stagingDir, "profile")}）——确认 baseUrl 为你填写的完整端点、且**存在 encryptedKey 字段**（只检查字段存在性，绝不可读取、输出或记录其值或任何密钥内容）。若任一不符，说明保存未生效：回到设置页重新粘贴密钥并再次点击保存，重复核验直到两项都成立；把最终核验结果写进 setup-postlaunch.json。历史数据显示密钥粘贴/保存间歇不落盘是本评测最高频的烧案原因，这一步不能省。
+保存操作规程（针对「点击保存未生效」的历史烧案）：点击「保存配置」前先把设置内容区滚动到底部、确认按钮完整可见；优先用坐标点击；**若核验发现文件未更新，改用键盘方式**——用 Tab 在对话框内把焦点移到「保存配置」按钮（观察焦点高亮确认落点）后按 Space/Enter，再核验文件；两种方式交替直到 settings.json 真实更新。绝不要在未核验文件更新的情况下认为保存成功。
 完成后更新 ${launchInfoPath} 的 appStarted=true 与 notes（说明已预配置内容，不含密钥），并写 ${join(stagingDir, "setup-postlaunch.json")} 记录你做了什么（不含密钥明文）。不要做 SETUP.md 之外的任何配置，不要开始用户对话。`;
   return `你是 DogDog 评测的环境准备者（setup 角色）。只读 setup 包（${setupPkgDir}）、staging 目录（${stagingDir}）与 SETUP.md；包内不含验收答案，也不要试图读取其他目录。你的 Bash/文件操作仅限这两个目录树；桌面操作仅限本案例的 DogDog 窗口。
 
