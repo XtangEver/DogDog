@@ -287,8 +287,15 @@ async function postTrialAudit({ stagingDir, evidenceDir, attemptDir, mockStatusJ
       mkdirSync(join(dest, ".."), { recursive: true });
       try {
         if (statSync(src).isDirectory()) {
-          for (const f of listDirTree(src, src))
+          // dest itself was never created (only its parent), and listDirTree
+          // yields directory markers ("sub/") alongside files — copying those
+          // threw ENOENT/EISDIR and aborted the whole conversations bundle
+          // (flagged by two independent reviewers in round 0).
+          mkdirSync(dest, { recursive: true });
+          for (const f of listDirTree(src, src)) {
+            if (f.endsWith("/")) continue;
             copyFileSync(join(src, f), join(dest, f.replaceAll("/", "_")));
+          }
         } else copyFileSync(src, dest);
         audit.profileFiles.push(rel);
       } catch (e) {
