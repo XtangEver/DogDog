@@ -60,8 +60,8 @@ async function createRunRoot({ roundDir, name, group, caseIds, exe, display, sou
     model: modelInfo,
     display,
     isolation: {
-      profile: "per-trial staging profiles (see trials/<ID>/staging/profile)",
-      traceRoots: ["per-trial: trials/<ID>/staging/codex/sessions", "per-trial: trials/<ID>/staging/codex/archived_sessions"],
+      profile: "per-trial staging profiles (see trials/<ID>/attempt-N/staging/profile)",
+      traceRoots: ["per-trial: trials/<ID>/attempt-N/staging/codex/sessions", "per-trial: trials/<ID>/attempt-N/staging/codex/archived_sessions"],
       excluded: ["oracles", "cases", "runner packages", "repo history", "formal install", "real .codex"],
     },
     fixtureHashes: {},
@@ -74,6 +74,7 @@ async function createRunRoot({ roundDir, name, group, caseIds, exe, display, sou
 }
 
 function mergeFixtureHashes(runRootDir, stagingDir) {
+  if (!stagingDir) return;
   const manifestPath = join(runRootDir, "manifest.json");
   const manifest = loadJson(manifestPath, null);
   if (!manifest) return;
@@ -82,6 +83,43 @@ function mergeFixtureHashes(runRootDir, stagingDir) {
     manifest.fixtureHashes[relative(runRootDir, join(stagingDir, rel)).replaceAll("\\", "/")] = hash;
   }
   atomicWriteJson(manifestPath, manifest);
+}
+
+// Staging lives under attempt-N/staging since the per-attempt fix; cases run
+// before that fix keep a shared trials/<ID>/staging — fall back to it.
+function latestStagingFor(trialDir) {
+  if (!existsSync(trialDir)) return null;
+  const dirs = readdirSync(trialDir)
+    .filter((d) => /^attempt-\d+$/.test(d))
+    .sort((a, b) => +a.slice(8) - +b.slice(8));
+  for (let i = dirs.length - 1; i >= 0; i--) {
+    const p = join(trialDir, dirs[i], "staging");
+    if (existsSync(join(p, "fixture-hashes.json"))) return p;
+  }
+  const legacy = join(trialDir, "staging");
+  return existsSync(join(legacy, "fixture-hashes.json")) ? legacy : null;
+}
+
+// Setup sessions sometimes start a desktop-service/mock-service via Bash
+// despite instructions (round-0 DD-01-01 leaked one; claude's background
+// cleanup missed it). Only the controller may run these, and only for the
+// CURRENT trial — so before any trial starts, any such process whose --out
+// lies inside this campaign's run area is an orphan by definition.
+// NEVER call this mid-trial: the current trial's own mock matches too.
+function sweepStrayMocks() {
+  const r = sh(
+    `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -match 'desktop-service\\.mjs|mock-service\\.mjs' -and $_.CommandLine -match 'auto-1031' } | Select-Object -ExpandProperty ProcessId`,
+    { timeoutMs: 30000 },
+  );
+  if (!r.ok) return;
+  for (const line of r.out.split(/\r?\n/)) {
+    const pid = +line;
+    if (!(pid > 0)) continue;
+    try {
+      execFileSync("taskkill", ["/PID", String(pid), "/T", "/F"], { timeout: 20000 });
+      timeline({ kind: "stray-mock-killed", pid });
+    } catch { /* already gone */ }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -381,37 +419,60 @@ async function runCases({ state, roundDir, exe, caseRows, display }) {
         suiteVersion, appVersion: exe.appVersion,
         modelInfo: group === "real"
           ? { protocol: "openai-responses", name: "GLM-5.3", endpoint: "https://open.bigmodel.cn/api/v1/responses", configuration: { credential: "env:GLM_API_KEY (value not recorded)" } }
-          : { protocol: "openai-responses", name: "fixture-mock", endpoint: "per-trial 127.0.0.1 (see trials/<ID>/staging/service/status.json)", configuration: { scripted: true } },
+          : { protocol: "openai-responses", name: "fixture-mock", endpoint: "per-trial 127.0.0.1 full request URL in trials/<ID>/attempt-N/staging/launch-info.json", configuration: { scripted: true } },
       });
     }
   }
   const results = {};
+  sweepStrayMocks();
   for (const row of caseRows) {
     const stop = budgetCheck(state);
     if (stop) { stopCampaign(state, stop); break; }
     const root = roots[row.group];
-    // resume: a case with any finalized result file is done — never rerun it
+    // Resume: skip a case only when it already carries a REAL judgment.
+    // Pure infra/controller-error lineages (controller bugs, crashes) get
+    // re-run with attempt numbering continuing; evidence is never deleted.
     const trialDir0 = join(root, "trials", row.id);
+    let priorResultCount = 0;
     if (existsSync(trialDir0)) {
       const resultFiles = readdirSync(trialDir0)
         .filter((f) => /^result(?:-\d+)?\.json$/.test(f))
         .sort();
       if (resultFiles.length) {
         const prior = readJson(join(trialDir0, resultFiles[resultFiles.length - 1]), null);
-        results[row.id] = { status: prior?.status ?? "unknown", attempts: resultFiles.length };
-        mergeFixtureHashes(root, join(trialDir0, "staging"));
-        timeline({ kind: "case-skip-resumed", caseId: row.id, status: prior?.status });
-        continue;
+        const st = prior?.status ?? "unknown";
+        priorResultCount = resultFiles.length;
+        const attemptDirs = readdirSync(trialDir0).filter((d) => /^attempt-\d+$/.test(d)).length;
+        const judged = st !== "infrastructure_failure" && st !== "controller-error" && st !== "unknown";
+        if (judged || attemptDirs >= 6) {
+          results[row.id] = { status: st, attempts: priorResultCount };
+          mergeFixtureHashes(root, latestStagingFor(trialDir0));
+          timeline({ kind: "case-skip-resumed", caseId: row.id, status: st, rerunExhausted: !judged || undefined });
+          continue;
+        }
+        timeline({ kind: "infra-resume-rerun", caseId: row.id, priorStatus: st, nextAttempt: attemptDirs + 1 });
       }
     }
-    // resume: crashed attempt left partial attempt dirs — continue numbering
+    // Resume: rotate attempt dirs that died before producing a result
+    // (evidence kept under a .partial-<ts> name) so numbering stays clean.
     let attempt = 1;
     const trialDir = join(root, "trials", row.id);
     if (existsSync(trialDir)) {
-      attempt = readdirSync(trialDir).filter((d) => /^attempt-/.test(d)).length || 1;
+      for (const d of readdirSync(trialDir).filter((x) => /^attempt-\d+$/.test(x))) {
+        const n = +d.slice(8);
+        const hasResult = n === 1
+          ? existsSync(join(trialDir, "result.json"))
+          : existsSync(join(trialDir, `result-${n}.json`));
+        if (!hasResult) {
+          renameSync(join(trialDir, d), join(trialDir, `${d}.partial-${Date.now()}`));
+          timeline({ kind: "attempt-rotated", caseId: row.id, dir: d });
+        }
+      }
+      attempt = readdirSync(trialDir).filter((d) => /^attempt-\d+$/.test(d)).length + 1;
     }
+    const maxAttempt = Math.min(priorResultCount + 3, 6) || 3;
     let last = null;
-    while (attempt <= 3) {
+    while (attempt <= maxAttempt) {
       state.activeTrial = { caseId: row.id, attempt, stage: "pipeline", startedAt: nowIso() };
       saveState(state);
       last = await runTrial({
@@ -419,10 +480,10 @@ async function runCases({ state, roundDir, exe, caseRows, display }) {
         setupPkgDir: packs.setup, reviewerPkgDir: packs.reviewer,
         exePath: exe.winUnpacked, attempt,
       });
-      mergeFixtureHashes(root, join(root, "trials", row.id, "staging"));
+      mergeFixtureHashes(root, latestStagingFor(join(root, "trials", row.id)));
       saveState(state);
       if (last.status !== "infrastructure_failure" && last.status !== "controller-error") break;
-      if (attempt === 3) break;
+      if (attempt === maxAttempt) break;
       timeline({ kind: "infra-retry", caseId: row.id, attempt });
       attempt += 1;
     }
@@ -787,13 +848,17 @@ async function smokeCase(id) {
     setupPkgDir: packs.setup, reviewerPkgDir: packs.reviewer,
     exePath: exe.winUnpacked, attempt,
   });
-  mergeFixtureHashes(root, join(root, "trials", id, "staging"));
+  mergeFixtureHashes(root, latestStagingFor(join(root, "trials", id)));
   const rep = sh(`node evaluation/tools/report.mjs --run "${root}"`, { timeoutMs: 300000 });
   saveLog(join(roundDir, "report.log"), rep.out);
   console.log("SMOKE RESULT", JSON.stringify({ id, status: res.status, validateRun: res.validateRun?.valid ?? res.validateRun }, null, 1));
 }
 
 async function main() {
+  // A dead stdout consumer (killed Tee/pipe) must EPIPE-kill a 12h run.
+  // The resume machinery covers real termination; broken pipes are ignored.
+  process.stdout?.on?.("error", () => {});
+  process.stderr?.on?.("error", () => {});
   switch (cmd) {
     case "preflight": await preflight(); break;
     case "round0": await round0(); break;

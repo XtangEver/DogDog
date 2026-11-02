@@ -107,7 +107,7 @@ const RUNNER_ENTRY = `你是 DogDog 的代理用户。只使用给定 brief 中�
 const RUNNER_PROTOCOL = `【运行规程】
 - 只使用 windows-mcp 工具操作桌面；每次动作前先用 Snapshot(use_vision=false) 重新观察，坐标以当前可访问性树为准；动作后再次观察确认。
 - 不要依赖图像分析（视觉通道受限）。可在每次重要状态变化时保存一张普通 Screenshot 作为本地证据，但不要尝试分析图片内容；图像类错误(如429)直接忽略并继续用文本树。
-- DogDog 窗口标题与进程见启动信息；不要启动或关闭 DogDog 进程，不要启动其他应用；如某步骤确需结束/重启应用或改动文件，完成当前观察后以单独一行 "CHECKPOINT: <名称>" 结束本回合并停止，其余交给准备者。
+- DogDog 窗口标题与进程见启动信息；不要启动或关闭 DogDog 进程，不要启动其他应用；如某步骤确需结束/重启应用或改动文件，完成当前观察后以单独一行 "CHECKPOINT: <名称>" 结束本回合并停止，其余交给准备者。本回合结束时若无需任何管理员动作，不要输出任何 CHECKPOINT 行。
 - 用户接管（USER_CONTROL / ControlStatus 显示被接管）时：等待并重新观察，绝不绕过，累计超过5分钟则记录并在预算内继续其他观察。
 - 载入/思考状态超过90秒无变化：Snapshot 记录现状后按预算继续。
 - 时间预算以本回合提示给出的剩余毫秒为准（覆盖全部回合累计）；用户回合数按 brief.limits.maxUserTurns 自行控制；用尽即停，如实保留未完成状态。
@@ -133,9 +133,9 @@ function setupPrompt({ caseId, setupPkgDir, stagingDir, exePath, group, phase, l
   const phaseA = `阶段A（DogDog 尚未启动）：
 1. 阅读 ${join(stagingDir, "SETUP.md")}（基础 staging 已由控制器生成：codex 输入、launch-env.json、brief.json、fixture-hashes.json 已就位）。跳过其中任何"运行 prepare/prepare-package"的步骤——staging 已存在，不得重复生成。
 2. 用本包（${setupPkgDir}）中的夹具与工具执行 SETUP.md 其余全部专有步骤中**可在文件侧完成的部分**：seed、规模生成器、junction/目录构造等。生成的工作副本要更新 ${join(stagingDir, "fixture-hashes.json")}（保留原夹具不动）。绝不要自己启动任何长驻进程/服务器（mock、desktop-service 等）——你的会话结束时它们会被杀死，这类服务由控制器作为管理员启动（见第3步 mockRequest）。SETUP.md 中"管理员执行 desktop-service/mock-service"的步骤即属此类，只需按第3步申报。
-3. 不要自己启动 DogDog。写 ${join(stagingDir, "launch-request.json")}：{"ready": true, "needPostLaunchSetup": <bool——SETUP.md 是否要求管理员在应用启动后经可见 UI 预配置（如服务地址/密钥/轨迹目录授权/勾选允许检索并发送相关片段）>, "mockRequest": <按 SETUP.md 需要本机 mock 时为 {"kind":"desktop-service","planPath":"<本包内该案例 mock-plan.json 的绝对路径>"} 或 {"kind":"mock-service","mode":"<SETUP.md 指定的 mode>"}，控制器会在 staging/service 下启动并回填 URL；不需要 mock 则为 null>}。
+3. 不要自己启动 DogDog。写 ${join(stagingDir, "launch-request.json")}：{"ready": true, "needPostLaunchSetup": <bool——SETUP.md 是否要求管理员在应用启动后经可见 UI 预配置（如服务地址/密钥/轨迹目录授权/勾选允许检索并发送相关片段）>, "mockRequest": <按 SETUP.md 需要本机 mock 时为 {"kind":"desktop-service","planPath":"<本包内该案例 mock-plan.json 的绝对路径>"} 或 {"kind":"mock-service","mode":"<SETUP.md 指定的 mode>","endpointPath":"<该案例协议对应的请求路径 /responses|/chat|/messages 之一，按 SETUP.md>"}，控制器会在 staging/service 下启动并回填完整请求 URL（含协议路径）；不需要 mock 则为 null>}。
 4. 写 ${join(stagingDir, "admin-plan.json")}：若案例存在中途管理员动作（杀进程/重启/中途加文件等），按触发器列出 [{"trigger":"<如 restart-after-first-answer>", "actions":[{"type":"kill-app"|"restart-app"|"copy-file"|"write-file"|"wait-ms", ...}]}]；无则为 []。
-5. 写 ${launchInfoPath}：模拟用户需要知道的启动信息 {"appStarted": false, "exe": "${exePath}", "mockServiceUrl": null（控制器启动 mock 后回填）, "mockMode": <按SETUP.md的模式或null>, "profileDir": "<staging>/profile", "traceRoots": ["<staging>/codex/sessions","<staging>/codex/archived_sessions"], "notes": "<给模拟用户的注意事项，例如：应用已/未预配置；设置勿动/需自行配置等>"}。不要在 launch-info 或任何交接文件中写入案例验收信息或密钥明文。`;
+5. 写 ${launchInfoPath}：模拟用户需要知道的启动信息 {"appStarted": false, "exe": "${exePath}", "mockServiceUrl": null（控制器启动 mock 后回填为完整请求 URL，含协议路径；模拟用户配置服务地址时原样使用该 URL）, "mockMode": <按SETUP.md的模式或null>, "profileDir": "<staging>/profile", "traceRoots": ["<staging>/codex/sessions","<staging>/codex/archived_sessions"], "notes": "<给模拟用户的注意事项，例如：应用已/未预配置；设置勿动/需自行配置等>"}。不要在 launch-info 或任何交接文件中写入案例验收信息或密钥明文。`;
   const phaseB = `阶段B（DogDog 已启动，PID 见 ${join(stagingDir, "process.json")}）：
 按 SETUP.md 中要求的应用内预配置，通过 windows-mcp 在可见 UI 上完成（模型设置 → 接口协议/服务地址/模型名/API Key/轨迹目录/允许检索并发送相关片段 → 保存配置）。${keyNote}
 完成后更新 ${launchInfoPath} 的 appStarted=true 与 notes（说明已预配置内容，不含密钥），并写 ${join(stagingDir, "setup-postlaunch.json")} 记录你做了什么（不含密钥明文）。不要做 SETUP.md 之外的任何配置，不要开始用户对话。`;
@@ -314,7 +314,10 @@ export async function runTrial({
   const startedAt = nowIso();
   const trialDir = join(runRootDir, "trials", caseId);
   const attemptDir = join(trialDir, `attempt-${attempt}`);
-  const stagingDir = join(trialDir, "staging");
+  // Fresh staging PER ATTEMPT: prepare() refuses an existing directory, so a
+  // shared trials/<ID>/staging made every retry after attempt 1 fail instantly
+  // ("Staging must be a fresh directory") and burned the whole retry budget.
+  const stagingDir = join(attemptDir, "staging");
   const shotsDir = join(runRootDir, "screenshots");
   mkdirSync(attemptDir, { recursive: true });
   timeline({ kind: "trial-start", caseId, attempt, group: caseRow.group });
@@ -348,9 +351,26 @@ export async function runTrial({
       });
       mockStatusJson = m.statusPath;
       const li = readJson(launchInfoPath, {});
-      li.mockServiceUrl = m.status.url;
+      // The product requests the configured URL verbatim, so the runner needs
+      // the FULL request URL. mock-service only serves /responses /chat
+      // /messages (the base URL 404s — round-0 DD-01-02); desktop-service
+      // reports its full endpoint directly.
+      const base = String(m.status.url ?? "");
+      let full = m.status.endpoint ?? null;
+      if (!full) {
+        const p = launchReq.mockRequest.endpointPath;
+        if (launchReq.mockRequest.kind === "mock-service" &&
+            !/^\/(responses|chat|messages)$/.test(String(p ?? ""))) {
+          throw new Error(
+            'launch-request.mockRequest.endpointPath missing/invalid: setup must declare the SETUP.md protocol path (/responses|/chat|/messages) so the controller can build the full request URL');
+        }
+        full = base + String(p ?? "");
+      }
+      li.mockServiceUrl = full;
+      li.mockServiceBaseUrl = base;
       li.mockMode = m.status.mode ?? null;
       writeFileSync(launchInfoPath, JSON.stringify(li, null, 2), "utf8");
+      appendEvent(runRootDir, { caseId, attempt, kind: "mock-url", base, full });
     } else {
       mockStatusJson = launchReq.mockStatusJson ?? null;
     }
@@ -451,14 +471,24 @@ export async function runTrial({
         summary: (hv.finalText ?? "").slice(0, 300),
       });
       const checkpoint = detectCheckpoint(hv.finalText);
+      // Runners sometimes close a turn with "CHECKPOINT: 无（…）" meaning NO
+      // admin action is needed — that is a natural end, not a checkpoint
+      // (round-0 DD-01-01 burned 3 attempts on exactly this).
+      const noopCheckpoint = !!checkpoint &&
+        /^(无|none|no|n\/a|不需要|无需|没有)(?![\w一-鿿-])/i.test(checkpoint.trim());
+      if (noopCheckpoint) {
+        appendEvent(runRootDir, { caseId, attempt, kind: "checkpoint-none", text: checkpoint.slice(0, 120) });
+        break;
+      }
       if (checkpoint && checkpoints < 4) {
         checkpoints += 1;
         const entry =
           adminPlan.find(
             (p) => checkpoint.includes(p.trigger) || String(p.trigger).includes(checkpoint),
-          ) ?? adminPlan[checkpoints - 1];
+          ) ?? (adminPlan.length === 1 ? adminPlan[0] : null);
         if (!entry)
           throw new Error(`checkpoint "${checkpoint}" has no admin-plan entry`);
+        appendEvent(runRootDir, { caseId, attempt, kind: "checkpoint", name: checkpoint.slice(0, 120), trigger: String(entry.trigger) });
         const out = await executeAdminActions({
           actions: entry.actions,
           stagingDir, exePath, dogdog, label: caseId,
@@ -520,7 +550,7 @@ export async function runTrial({
           timeoutMs: 10 * 60 * 1000,
         });
         state.budget.claudeTurns += 1;
-        if (vRes.code === 0) {
+        if (vRes.exitCode === 0) {
           const vt = readTranscript(join(visualDir, "visual.jsonl"));
           visualFindings = vt.finalText;
           writeFileSync(join(attemptDir, "visual-findings.md"), vt.finalText ?? "", "utf8");
@@ -600,6 +630,8 @@ export async function runTrial({
         modelRequests: null,
         outPath,
       });
+      state.budget.trialCount += 1;
+      timeline({ kind: "trial-end", caseId, attempt, status: finalized.status, infra: true });
       return { status: finalized.status, result: finalized, validateRun: await validateRunRoot(runRootDir) };
     } catch (e2) {
       return { status: "controller-error", error: String(e2.message ?? e2) };
