@@ -435,9 +435,14 @@ async function runCases({ state, roundDir, exe, caseRows, display }) {
     const trialDir0 = join(root, "trials", row.id);
     let priorResultCount = 0;
     if (existsSync(trialDir0)) {
+      // "Latest" = highest attempt NUMBER, not lexicographic file order:
+      // "result.json" (attempt 1) sorts after "result-4.json" by code points,
+      // which made a stale attempt-1 infra verdict shadow a later pass and
+      // forced needless re-runs on every resume.
+      const resultAttempt = (f) => (f === "result.json" ? 1 : Number(f.slice(7, -5)) || 0);
       const resultFiles = readdirSync(trialDir0)
         .filter((f) => /^result(?:-\d+)?\.json$/.test(f))
-        .sort();
+        .sort((a, b) => resultAttempt(a) - resultAttempt(b));
       if (resultFiles.length) {
         const prior = readJson(join(trialDir0, resultFiles[resultFiles.length - 1]), null);
         const st = prior?.status ?? "unknown";
