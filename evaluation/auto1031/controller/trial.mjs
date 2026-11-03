@@ -449,6 +449,30 @@ export async function runTrial({
       });
       if (setupBRes.exitCode !== 0)
         throw new Error(`setup-B failed exit=${setupBRes.exitCode}`);
+      // setup-B artifact gate: a clean-exit session can still be incomplete.
+      // Observed (DD-06-05 a1): a server-side image-analysis hang silently
+      // ended the role stream mid-tool-call with exit 0 — the pipeline then
+      // burned a full runner/visual/reviewer cycle on an unconfigured app.
+      // For cases requiring UI pre-config, the persisted settings file is the
+      // controller-verifiable artifact; without it the runner stage is doomed,
+      // so fail fast into the standard infra-retry path. Field EXISTENCE only
+      // — values are never read, echoed, or logged (same boundary as fix #8).
+      const settingsPath = join(stagingDir, "profile", "reviews", "settings.json");
+      let settingsOk = false;
+      try {
+        const s = JSON.parse(readFileSync(settingsPath, "utf8"));
+        settingsOk =
+          typeof s.baseUrl === "string" && s.baseUrl.length > 0 &&
+          Object.prototype.hasOwnProperty.call(s, "encryptedKey");
+      } catch {
+        // missing or unparseable → gate fails below
+      }
+      if (!settingsOk) {
+        appendEvent(runRootDir, { caseId, attempt, kind: "setup-b-artifact-missing" });
+        throw new Error(
+          "setup-B incomplete: profile/reviews/settings.json missing or lacks baseUrl/encryptedKey fields (existence check only)"
+        );
+      }
     }
     const launchInfo = readJson(launchInfoPath, { appStarted: false });
     launchInfo.appStarted = true;
