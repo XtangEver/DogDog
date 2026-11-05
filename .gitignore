@@ -27,3 +27,30 @@ verification/local-*
 # Windows metadata
 Thumbs.db
 Desktop.ini
+
+# Images (all directories; case-insensitive extensions)
+*.[pP][nN][gG]
+*.[jJ][pP][gG]
+*.[jJ][pP][eE][gG]
+*.[jJ][fF][iI][fF]
+*.[gG][iI][fF]
+*.[wW][eE][bB][pP]
+*.[aA][vV][iI][fF]
+*.[bB][mM][pP]
+*.[tT][iI][fF]
+*.[tT][iI][fF][fF]
+*.[iI][cC][oO]
+*.[iI][cC][nN][sS]
+*.[sS][vV][gG]
+*.[sS][vV][gG][zZ]
+*.[hH][eE][iI][cC]
+*.[hH][eE][iI][fF]
+*.[aA][pP][nN][gG]
+*.[jJ][xX][lL]
+*.[dD][iI][bB]
+*.[pP][sS][dD]
+*.[rR][aA][wW]
+*.[dD][nN][gG]
+
+# Required application icon source
+!/assets/dogdog.svg
